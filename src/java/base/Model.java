@@ -7,7 +7,8 @@ package base;
 
 import Core.Database.DB;
 import Core.Database.Database;
-import com.tmsl.pojo.User;
+import com.google.gson.Gson;
+import com.tmsl.pojo.Faculty;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.servlet.http.HttpServletRequest;
@@ -25,83 +26,90 @@ public class Model {
     public Model() {
         Database.config("localhost", "shankha", "root", "project_database");
     }
+    
+    
+    
 
-    public User getUser(User user) throws SQLException {
-        User output_user = new User();
+    public Faculty getFaculty(Faculty faculty) throws SQLException {
+        Faculty output_faculty = new Faculty();
 
-        db.selectTable("user_master");
+        db.selectTable("faculty_master");
         db.select(new String[]{"*"});
-        if (user.getPassword().trim() != "" && !user.getPassword().trim().equals("adminRequest96")) {
-            db.where("password", user.getPassword().trim());
+        if (faculty.getPassword().trim() != "" && !faculty.getPassword().trim().equals("adminRequest96")) {
+            db.where("password", faculty.getPassword().trim());
         } else {
-            if(!user.getPassword().trim().equals("adminrequest96")){
+            if(!faculty.getPassword().trim().equals("adminrequest96")){
                 return null;
             }
         }
+        
+        System.out.println("------------------------->>" + faculty);
+        
+       
 
-        if (user.getEmail().trim() != "") {
-            db.where("email", user.getEmail().trim());
-        } else if (user.getUsername().trim() != "") {
-            if(!user.getPassword().trim().equals("adminrequest96")){
-                db.where("username", user.getUsername().trim());
+        if (faculty != null && faculty.getEmail().trim() != "") {
+            db.where("email", faculty.getEmail().trim());
+        } else if (faculty != null && faculty.getUsername().trim() != "") {
+            if(!faculty.getPassword().trim().equals("adminrequest96")){
+                db.where("username", faculty.getUsername().trim());
             }
         }
 
         ResultSet rs = db.access(db.getQueryString());
         if (rs.next()) {
-            output_user.setUsername(rs.getString("username").trim());
-            output_user.setFirst_name(rs.getString("first_name").trim());
+            output_faculty.setUsername(rs.getString("username").trim());
+            output_faculty.setFirst_name(rs.getString("first_name").trim());
             if (rs.getString("middle_name") != null) {
-                output_user.setMiddle_name(rs.getString("middle_name").trim());
+                output_faculty.setMiddle_name(rs.getString("middle_name").trim());
             }
             if (rs.getString("last_name") != null) {
-                output_user.setLast_name(rs.getString("last_name").trim());
+                output_faculty.setLast_name(rs.getString("last_name").trim());
             }
-            output_user.setEmail(rs.getString("email").trim());
-            output_user.setPassword(rs.getString("password").trim());
+            output_faculty.setEmail(rs.getString("email").trim());
+            output_faculty.setPassword(rs.getString("password").trim());
             if (rs.getString("mobile_number") != null) {
-                output_user.setMobile_number(rs.getString("mobile_number").trim());
+                output_faculty.setMobile_number(rs.getString("mobile_number").trim());
             }
-            output_user.setUser_type(rs.getString("user_type").trim());
+            output_faculty.setFaculty_type(rs.getString("faculty_type").trim());
         } else {
             return null;
         }
         
-        return output_user;
+        return output_faculty;
     }
 
-    public User getUser(User user, boolean b) throws SQLException {
-        User output_user = new User();
+    public Faculty getFaculty(Faculty faculty, boolean b) throws SQLException {
+        Faculty output_faculty = new Faculty();
 
-        db.selectTable("user_master");
+        db.selectTable("faculty_master");
         db.select(new String[]{"*"});
 
-        if (!user.getEmail().trim().equals("")) {
-            db.where("email", user.getEmail().trim());
+        if (!faculty.getEmail().trim().equals("")) {
+            db.where("email", faculty.getEmail().trim());
         }else{
             return null;
         }
 
         ResultSet rs = db.access();
         if (rs.next()) {
-            output_user.setUsername(rs.getString("username").trim());
-            output_user.setFirst_name(rs.getString("first_name").trim());
+            output_faculty.setUsername(rs.getString("username").trim());
+            output_faculty.setFirst_name(rs.getString("first_name").trim());
             if (rs.getString("middle_name") != null) {
-                output_user.setMiddle_name(rs.getString("middle_name").trim());
+                output_faculty.setMiddle_name(rs.getString("middle_name").trim());
             }
             if (rs.getString("last_name") != null) {
-                output_user.setLast_name(rs.getString("last_name").trim());
+                output_faculty.setLast_name(rs.getString("last_name").trim());
             }
-            output_user.setEmail(rs.getString("email").trim());
-            output_user.setPassword(rs.getString("password").trim());
+            output_faculty.setEmail(rs.getString("email").trim());
+            output_faculty.setPassword(rs.getString("password").trim());
             if (rs.getString("mobile_number") != null) {
-                output_user.setMobile_number(rs.getString("mobile_number").trim());
+                output_faculty.setMobile_number(rs.getString("mobile_number").trim());
             }
-            output_user.setUser_type(rs.getString("user_type").trim());
+            output_faculty.setFaculty_type(rs.getString("faculty_type").trim());
         } else {
             return null;
         }
-        return output_user;
+        return output_faculty;
     }
 
 

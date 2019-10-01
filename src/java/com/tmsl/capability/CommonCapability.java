@@ -6,8 +6,9 @@
 package com.tmsl.capability;
 
 import base.Controller;
+import base.Model;
 import com.tmsl.model.AdminModel;
-import com.tmsl.pojo.User;
+import com.tmsl.pojo.Faculty;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +19,10 @@ import java.util.Map;
  * @author Shankha
  */
 public class CommonCapability extends Controller {
+    
+    public Model adminModel;
 
-    protected User compileUserPostData() {
+    protected Faculty compileFacultyPostData() {
         String username = gPost("username");
         String email = gPost("email");
         String first_name = gPost("first_name");
@@ -27,49 +30,20 @@ public class CommonCapability extends Controller {
         String last_name = gPost("last_name");
         String pass = "Default";
         String mobile_number = gPost("mobile_number");
-        String user_type = "-1";
+        String faculty_type = "-1";
 
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setFirst_name(first_name);
-        user.setMiddle_name(middle_name);
-        user.setLast_name(last_name);
-        user.setPassword(pass);
-        user.setMobile_number(mobile_number);
-        user.setUser_type(user_type);
+        Faculty faculty = new Faculty();
+        faculty.setUsername(username);
+        faculty.setEmail(email);
+        faculty.setFirst_name(first_name);
+        faculty.setMiddle_name(middle_name);
+        faculty.setLast_name(last_name);
+        faculty.setPassword(pass);
+        faculty.setMobile_number(mobile_number);
+        faculty.setFaculty_type(faculty_type);
 
-        return user;
+        return faculty;
     }
 
-    protected Map<String, Object> getUsersByType(String s) throws SQLException {
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("status", "failed");
-        if (!isLoggedIn()) {
-            data.put("info", "login required");
-            return data;
-        } else {
-            AdminModel adminModel = new AdminModel();
-            ArrayList<User> users = adminModel.getAllFacultyByType(s);
-            if (users.size() == 0) {
-                data.put("info", "no coordinator found");
-                return data;
-            } else {
-                data.put("users", users);
-                return data;
-            }
-
-        }
-    }
-
-    protected User getUserByEmail(String email) throws SQLException {
-        if (!isLoggedIn()) {
-            return null;
-        } else {
-            AdminModel adminModel = new AdminModel();
-            User user = adminModel.getFacultyByEmail(email);
-            return user;
-        }
-    }
 
 }

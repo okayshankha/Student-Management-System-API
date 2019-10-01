@@ -64,13 +64,13 @@ public class Controller extends HttpServlet {
         return false;
     }
 
-    public String loggedInUserType() {
+    public String loggedInFacultyType() {
         if (!isLoggedIn()) {
             return null;
         }
 
         HttpSession session = Controller.request.getSession(true);
-        return (String) session.getAttribute("user_type");
+        return (String) session.getAttribute("faculty_type");
     }
 
     protected String getRequstApi() {
@@ -144,10 +144,20 @@ public class Controller extends HttpServlet {
     }
 
     public String gPost(String name) {
+        String s = "";
         if (request.getMethod().equals("POST")) {
-            return request.getParameter(name);
+            s = request.getParameter(name);
+            switch(name){
+                case "pass":
+                    s = (s != null) ? s : "Default";
+                    break;
+                default:
+                    //System.out.println("Post : " + name + " : " + s);
+                    s = (s != null) ? s : "";
+            }
+            return s;
         }
-        return null;
+        return s;
     }
 
     public String gGet(String name) {

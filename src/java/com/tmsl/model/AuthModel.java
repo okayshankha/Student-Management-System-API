@@ -6,7 +6,7 @@
 package com.tmsl.model;
 
 import base.Model;
-import com.tmsl.pojo.User;
+import com.tmsl.pojo.Faculty;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,9 +20,9 @@ import javax.servlet.http.HttpSession;
 public class AuthModel extends Model {
 
 
-    public boolean validate(User user) throws SQLException {
+    public boolean validate(Faculty user) throws SQLException {
         boolean result = false;
-        db.selectTable("user_master");
+        db.selectTable("faculty_master");
         db.select_count("id");
 
         if (!user.getPassword().trim().equals("")) {

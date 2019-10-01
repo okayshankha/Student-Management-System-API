@@ -10,13 +10,15 @@ import com.mysql.cj.x.protobuf.MysqlxConnection.Capability;
 import com.tmsl.capability.AdminCapability;
 import com.tmsl.capability.CommonCapability;
 import com.tmsl.model.AuthModel;
-import com.tmsl.pojo.User;
+import com.tmsl.pojo.Faculty;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
@@ -42,7 +44,7 @@ import javax.servlet.http.HttpSession;
  *           "email": "admin@admin.com",
  *           "password": "****",
  *           "mobile_number": "-1",
- *           "user_type": "1"
+ *           "faculty_type": "1"
  *       },
  *       "status": "success"
  *   },
@@ -67,10 +69,10 @@ public class Api extends Controller {
 
         Object output = null;
         String requestApi = getRequstApi();
-        String userLevel = loggedInUserType();
+        String userLevel = loggedInFacultyType();
         /**
-         * user level : 
-         * 1 -> admin 2 -> hod 3 -> coordinator 4 -> teacher 5 -> student
+         * user level : 1 -> admin 2 -> hod 3 -> coordinator 4 -> teacher 5 ->
+         * student
          */
 
         if (!requestApi.equals("/auth")) {
@@ -109,15 +111,9 @@ public class Api extends Controller {
             output = data;
         }
 
-        
-        
-        
-        
-        
         /**
          * *****************************************************
          */
-
         PrintWriter out = response.getWriter();
         try {
             out.print(jsonOut(output));
@@ -137,17 +133,15 @@ public class Api extends Controller {
 
         AuthModel authModel = new AuthModel();
 
-        User user = new User();
+        Faculty faculty = new Faculty();
         String username = null;
         String email = null;
         String pass = null;
 
-        authModel.validate(user);
+        authModel.validate(faculty);
 
-        if (request.getMethod().equals("POST")) {
-            username = request.getParameter("username");
-            pass = request.getParameter("pass");
-        }
+        username = gPost("username");
+        pass = gPost("pass");
 
         Map<String, Object> output = new HashMap<String, Object>();
         output.put("status", "failed");
@@ -164,25 +158,25 @@ public class Api extends Controller {
             }
 
             if (email != null) {
-                user.setEmail(email);
+                faculty.setEmail(email);
             }
             if (username != null) {
-                user.setUsername(username);
+                faculty.setUsername(username);
             }
             if (pass != null) {
-                user.setPassword(pass);
+                faculty.setPassword(pass);
             }
 
             try {
-                user = authModel.getUser(user);
+                faculty = authModel.getFaculty(faculty);
 
-                if (user != null) {
+                if (faculty != null) {
                     output.put("status", "success");
                     HttpSession session = request.getSession();
                     session.setAttribute("login_status", "true");
-                    session.setAttribute("email", user.getEmail());
-                    session.setAttribute("user_type", user.getUser_type());
-                    session.setAttribute("username", user.getUsername());
+                    session.setAttribute("email", faculty.getEmail());
+                    session.setAttribute("faculty_type", faculty.getFaculty_type());
+                    session.setAttribute("username", faculty.getUsername());
                 }
             } catch (SQLException ex) {
 
@@ -190,10 +184,10 @@ public class Api extends Controller {
         }
 
         if (output.get("status").equals("success")) {
-            user.setEmail("****");
-            user.setPassword("****");
-            user.setMobile_number("****");
-            output.put("user", user);
+            faculty.setEmail("****");
+            faculty.setPassword("****");
+            faculty.setMobile_number("****");
+            output.put("faculty", faculty);
         }
 
         return output;
@@ -204,86 +198,100 @@ public class Api extends Controller {
         Map<String, Object> output = new HashMap<String, Object>();
         output.put("status", "invalid api path");
         switch (requestApi) {
-            case "/all-coordinator":
-                try {
-                    output = capability.getCoordinator();
-                } catch (SQLException ex) {}
-                break;
-            case "/all-hod":
+            case "/all-hod":  //d - returns all hod user details
                 try {
                     output = capability.getHod();
-                } catch (SQLException ex) {}
+                } catch (SQLException ex) {
+                }
                 break;
-            case "/all-teacher":
+            case "/add-hod":  //d - adds hod user details
+                try {
+                    String sameAttr = capability.checkFacultyUnUniqueNess();
+                    if (sameAttr != null) {
+                        output.put("status", "failed");
+                        output.put("ununique", sameAttr);
+                        output.put("info", sameAttr + " needs to be unique");
+                    } else if (capability.addHod()) {
+                        output.put("status", "success");
+                    } else {
+                        output.put("status", "failed");
+                        output.put("info", "update error");
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(Api.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
+
+            case "/all-coordinator":  //d - returns all coordinator user details
+                try {
+                    String email = gGet("email");
+                    output = capability.getCoordinator(email);
+                } catch (SQLException ex) {
+                }
+                break;
+            case "/add-coordinator":  //d - adds coordinator user details
+                try {
+                    String sameAttr = capability.checkFacultyUnUniqueNess();
+                    if (sameAttr != null) {
+                        output.put("status", "failed");
+                        output.put("ununique", sameAttr);
+                        output.put("info", sameAttr + " needs to be unique");
+                    } else if (capability.addCoordinator()) {
+                        output.put("status", "success");
+                    } else {
+                        output.put("status", "failed");
+                        output.put("info", "update error");
+                    }
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
+                break;
+
+            case "/all-teacher":  //d - returns all teacher user details
                 try {
                     output = capability.getTeacher();
-                } catch (SQLException ex) {}
+                } catch (SQLException ex) {
+                }
                 break;
-            case "/add-coordinator":
+            case "/add-teacher":  //d - adds teacher user details
                 try {
-                    String sameAttr = capability.checkUserNonUniqueNess();
-                    if(sameAttr != null){
+                    String sameAttr = capability.checkFacultyUnUniqueNess();
+                    if (sameAttr != null) {
                         output.put("status", "failed");
                         output.put("ununique", sameAttr);
                         output.put("info", sameAttr + " needs to be unique");
-                    }else if(capability.setCoordinator()){
+                    } else if (capability.addTeacher()) {
                         output.put("status", "success");
-                    }else{
+                    } else {
                         output.put("status", "failed");
                         output.put("info", "update error");
                     }
-                } catch (Exception ex) {System.out.println(ex);}
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
                 break;
-            case "/add-hod":  //Done
+            case "/delete-user":  //d - delete user details
                 try {
-                    String sameAttr = capability.checkUserNonUniqueNess();
-                    if(sameAttr != null){
-                        output.put("status", "failed");
-                        output.put("ununique", sameAttr);
-                        output.put("info", sameAttr + " needs to be unique");
-                    }else if(capability.setHod()){
-                        output.put("status", "success");
-                    }else{
-                        output.put("status", "failed");
-                        output.put("info", "update error");
-                    }
-                } catch (Exception ex) {System.out.println(ex);}
-                break;
-            case "/delete-user":  //Done
-                try {
-                    boolean sameAttr = capability.doesExist();
-                    if(sameAttr){
-                        if(capability.deletetUser()){
+                    String sameAttr = capability.checkFacultyUnUniqueNess();
+                    if (sameAttr == "email") {
+                        if (capability.deletetFaculty()) {
                             output.put("status", "success");
                             output.put("info", "hod deleted");
-                        }else{
+                        } else {
                             output.put("status", "failed");
                             output.put("info", "failed to delete");
                         }
-                    }else{
+                    } else {
                         output.put("status", "failed");
                         output.put("info", "non-existing user");
                     }
-                } catch (SQLException ex) {System.out.println(ex);}
+                } catch (SQLException ex) {
+                    System.out.println(ex);
+                }
                 break;
-            case "/add-teacher":
-                try {
-                    String sameAttr = capability.checkUserNonUniqueNess();
-                    if(sameAttr != null){
-                        output.put("status", "failed");
-                        output.put("ununique", sameAttr);
-                        output.put("info", sameAttr + " needs to be unique");
-                    }else if(capability.setTeacher()){
-                        output.put("status", "success");
-                    }else{
-                        output.put("status", "failed");
-                        output.put("info", "update error");
-                    }
-                } catch (Exception ex) {System.out.println(ex);}
-                break;
+
         }
 
         return output;
     }
-
 }

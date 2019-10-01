@@ -9,16 +9,27 @@ package com.tmsl.pojo;
  *
  * @author Shankha
  */
-public class User {
+public class Faculty {
 
-    private String username = "";
-    private String first_name = "";
-    private String middle_name = "";
-    private String last_name = "";
-    private String email = "";
-    private String password = "";
-    private String mobile_number = "";
-    private String user_type = "";
+    private String username;
+    private String first_name;
+    private String middle_name;
+    private String last_name;
+    private String email;
+    private String password;
+    private String mobile_number;
+    private String faculty_type;
+
+    public Faculty() {
+        username = "";
+        first_name = "";
+        middle_name = "";
+        last_name = "";
+        email = "";
+        password = "";
+        mobile_number = "";
+        faculty_type = "";
+    }
 
     public String getUsername() {
         return username;
@@ -76,13 +87,12 @@ public class User {
         this.mobile_number = mobile_number;
     }
 
-    public String getUser_type() {
-        return user_type;
+    public String getFaculty_type() {
+        return faculty_type;
     }
 
-    public void setUser_type(String user_type) {
-        this.user_type = user_type;
+    public void setFaculty_type(String faculty_type) {
+        this.faculty_type = faculty_type;
     }
-    
-    
+
 }
