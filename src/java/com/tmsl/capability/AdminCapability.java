@@ -7,12 +7,26 @@ package com.tmsl.capability;
 
 import base.Controller;
 import com.google.gson.Gson;
+import com.sha.ExcelHandler;
+import static com.sha.ExcelHandler.*;
+import com.sun.media.jfxmedia.logging.Logger;
+import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 import com.tmsl.model.AdminModel;
 import com.tmsl.pojo.Faculty;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.LogManager;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.apache.tomcat.util.http.fileupload.RequestContext;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 /**
  *
@@ -130,8 +144,8 @@ public class AdminCapability extends CommonCapability {
         } else {
             AdminModel adminModel = new AdminModel();
             ArrayList<Faculty> faculties;
-            
-            System.out.println("\\\\\\\\\\\\   " + email + " -> " + !email.equals(""));
+
+            //System.out.println("\\\\\\\\\\\\   " + email + " -> " + !email.equals(""));
             if (!email.equals("")) {
                 faculties = adminModel.getAllFacultyByType(s, "email", email);
             } else {
@@ -168,4 +182,51 @@ public class AdminCapability extends CommonCapability {
             return user;
         }
     }
+
+    /**
+     * Student Part
+     */
+    public Map<String, Object> uploadStudentFile() {
+        Map<String, Object> output = new HashMap<>();
+        output.put("status", "failed");
+        String UPLOAD_DIRECTORY = "C:/";
+        String name = null;
+        try {
+            if (org.apache.commons.fileupload.servlet.ServletFileUpload.isMultipartContent(request)) {
+                try {
+                    List<org.apache.commons.fileupload.FileItem> multiparts = new org.apache.commons.fileupload.servlet.ServletFileUpload(
+                            new org.apache.commons.fileupload.disk.DiskFileItemFactory()).parseRequest(request);
+
+                    for (org.apache.commons.fileupload.FileItem item : multiparts) {
+                        if (!item.isFormField()) {
+                            String fileExt = item.getContentType();
+                            if(!fileExt.equals("xls")){
+                                output.put("info", "invalid file extention");
+                                return output;
+                            }
+                            
+                            //name = new File(item.getName()).getName();
+                            name = new File("hello.pdf").getName();
+                            item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
+                        }
+                    }
+
+                    System.out.println(name);
+                    //File uploaded successfully
+                    request.setAttribute("message", "File Uploaded Successfully");
+                } catch (Exception ex) {
+                    System.out.println("File Upload Failed due to " + ex);
+                    request.setAttribute("message", "File Upload Failed due to " + ex);
+                }
+
+            } else {
+                request.setAttribute("message",
+                        "Sorry this Servlet only handles file upload request");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

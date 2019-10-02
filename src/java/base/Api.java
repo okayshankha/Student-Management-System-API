@@ -6,9 +6,8 @@
 package base;
 
 import base.Controller;
-import com.mysql.cj.x.protobuf.MysqlxConnection.Capability;
+import static base.Controller.request;
 import com.tmsl.capability.AdminCapability;
-import com.tmsl.capability.CommonCapability;
 import com.tmsl.model.AuthModel;
 import com.tmsl.pojo.Faculty;
 import java.io.IOException;
@@ -58,6 +57,7 @@ import javax.servlet.http.HttpSession;
  *
  */
 @WebServlet(name = "Api", urlPatterns = {"/api/*"})
+
 public class Api extends Controller {
 
     @Override
@@ -77,7 +77,6 @@ public class Api extends Controller {
 
         if (!requestApi.equals("/auth")) {
             if (isLoggedIn()) {
-
                 switch (userLevel) {
                     case "1": // Admin
                         output = admin(requestApi);
@@ -197,6 +196,7 @@ public class Api extends Controller {
         AdminCapability capability = new AdminCapability();
         Map<String, Object> output = new HashMap<String, Object>();
         output.put("status", "invalid api path");
+        System.out.println(requestApi);
         switch (requestApi) {
             case "/all-hod":  //d - returns all hod user details
                 try {
@@ -289,7 +289,13 @@ public class Api extends Controller {
                     System.out.println(ex);
                 }
                 break;
-
+            case "/upload/student_file":
+                try {
+                    output = capability.uploadStudentFile();
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
+                break;
         }
 
         return output;
