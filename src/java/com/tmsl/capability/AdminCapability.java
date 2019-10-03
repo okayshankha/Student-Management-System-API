@@ -186,11 +186,10 @@ public class AdminCapability extends CommonCapability {
     /**
      * Student Part
      */
-    public Map<String, Object> uploadStudentFile() {
+    public Map<String, Object> uploadStudentFile(String dir ,String name) {
         Map<String, Object> output = new HashMap<>();
         output.put("status", "failed");
-        String UPLOAD_DIRECTORY = "C:/";
-        String name = null;
+        String UPLOAD_DIRECTORY = dir;
         try {
             if (org.apache.commons.fileupload.servlet.ServletFileUpload.isMultipartContent(request)) {
                 try {
@@ -199,34 +198,30 @@ public class AdminCapability extends CommonCapability {
 
                     for (org.apache.commons.fileupload.FileItem item : multiparts) {
                         if (!item.isFormField()) {
-                            String fileExt = item.getContentType();
+                            String fileExt = item.getName().split("\\.")[1];
                             if(!fileExt.equals("xls")){
                                 output.put("info", "invalid file extention");
                                 return output;
                             }
-                            
-                            //name = new File(item.getName()).getName();
-                            name = new File("hello.pdf").getName();
+                            name = new File(name).getName();
                             item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
                         }
                     }
 
-                    System.out.println(name);
                     //File uploaded successfully
-                    request.setAttribute("message", "File Uploaded Successfully");
+                    output.put("status", "success");
+                    output.put("info", "File Uploaded Successfully");
                 } catch (Exception ex) {
-                    System.out.println("File Upload Failed due to " + ex);
-                    request.setAttribute("message", "File Upload Failed due to " + ex);
+                    output.put("info", "File Upload Failed due to " + ex);
                 }
 
             } else {
-                request.setAttribute("message",
-                        "Sorry this Servlet only handles file upload request");
+                output.put("info", "Sorry this Servlet only handles file upload request");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return output;
     }
 
 }

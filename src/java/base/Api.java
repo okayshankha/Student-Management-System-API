@@ -7,6 +7,9 @@ package base;
 
 import base.Controller;
 import static base.Controller.request;
+import com.sha.ExcelHandler;
+import static com.sha.ExcelHandler.getDataPositionMapping;
+import static com.sha.ExcelHandler.readExcel;
 import com.tmsl.capability.AdminCapability;
 import com.tmsl.model.AuthModel;
 import com.tmsl.pojo.Faculty;
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -196,7 +200,7 @@ public class Api extends Controller {
         AdminCapability capability = new AdminCapability();
         Map<String, Object> output = new HashMap<String, Object>();
         output.put("status", "invalid api path");
-        System.out.println(requestApi);
+        // System.out.println(requestApi);
         switch (requestApi) {
             case "/all-hod":  //d - returns all hod user details
                 try {
@@ -291,8 +295,25 @@ public class Api extends Controller {
                 break;
             case "/upload/student_file":
                 try {
-                    output = capability.uploadStudentFile();
+                    String TEMP_FILE_DIR = "D:/";
+                    String TEMP_FILE_NAME = "px2.xls";
+                    //Map<String, Object> output_ = capability.uploadStudentFile(TEMP_FILE_DIR, TEMP_FILE_NAME);
+                    Map<String, Object> output_ = new HashMap<>();
+                    output_.put("status", "success");
+                    if (output_.get("status").equals("success")) {
+                        HashMap<String, ArrayList<ArrayList<String>>> excelData = ExcelHandler.readExcel(TEMP_FILE_DIR + TEMP_FILE_NAME);
+                        for (HashMap.Entry<String, ArrayList<ArrayList<String>>> entry : excelData.entrySet()) {
+                            ArrayList<ArrayList<String>> data = entry.getValue();
+                            Map<String, Integer> dataPosMap = new HashMap<String, Integer>();
+                            dataPosMap = ExcelHandler.getDataPositionMapping(data);
+                            System.out.println("jhjhjhj");
+                            System.out.print(data);
+                        }
+                    } else {
+                        output = output_;
+                    }
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     System.out.println(ex);
                 }
                 break;
