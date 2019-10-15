@@ -5,28 +5,15 @@
  */
 package com.tmsl.capability;
 
-import base.Controller;
-import com.google.gson.Gson;
-import com.sha.ExcelHandler;
-import static com.sha.ExcelHandler.*;
-import com.sun.media.jfxmedia.logging.Logger;
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 import com.tmsl.model.AdminModel;
 import com.tmsl.pojo.Faculty;
+import com.tmsl.pojo.Student;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.LogManager;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.apache.tomcat.util.http.fileupload.RequestContext;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 /**
  *
@@ -145,7 +132,6 @@ public class AdminCapability extends CommonCapability {
             AdminModel adminModel = new AdminModel();
             ArrayList<Faculty> faculties;
 
-            //System.out.println("\\\\\\\\\\\\   " + email + " -> " + !email.equals(""));
             if (!email.equals("")) {
                 faculties = adminModel.getAllFacultyByType(s, "email", email);
             } else {
@@ -156,6 +142,7 @@ public class AdminCapability extends CommonCapability {
                 data.put("info", "no user found");
                 return data;
             } else {
+                data.put("status", "success");
                 data.put("users", faculties);
                 return data;
             }
@@ -186,7 +173,7 @@ public class AdminCapability extends CommonCapability {
     /**
      * Student Part
      */
-    public Map<String, Object> uploadStudentFile(String dir ,String name) {
+    public Map<String, Object> uploadStudentFile(String dir, String name) {
         Map<String, Object> output = new HashMap<>();
         output.put("status", "failed");
         String UPLOAD_DIRECTORY = dir;
@@ -199,7 +186,7 @@ public class AdminCapability extends CommonCapability {
                     for (org.apache.commons.fileupload.FileItem item : multiparts) {
                         if (!item.isFormField()) {
                             String fileExt = item.getName().split("\\.")[1];
-                            if(!fileExt.equals("xls")){
+                            if (!fileExt.equals("xls")) {
                                 output.put("info", "invalid file extention");
                                 return output;
                             }
@@ -222,6 +209,41 @@ public class AdminCapability extends CommonCapability {
             e.printStackTrace();
         }
         return output;
+    }
+
+    public ArrayList<Student> getStudents() throws SQLException {
+        ArrayList<Student> list = null;
+        list = adminModel.getAllStudent();
+        return ((list != null) && (list.size() != 0)) ? list : null;
+    }
+
+    public ArrayList<Student> getStudents(String[] filters, String[] values) throws SQLException {
+        ArrayList<Student> list = null;
+
+        list = adminModel.getAllStudent(filters, values);
+
+        return ((list != null) && (list.size() != 0)) ? list : null;
+    }
+
+    public int addStudents(ArrayList<ArrayList<String>> studentData, Map<String, Integer> dataPosMap) {
+        //int length = studentData.size();
+        int cnt = 0;
+        for (int i = 1; i < studentData.size(); i++) {
+            ArrayList<String> sData = studentData.get(i);
+
+            //Student s = new Student();
+            try {
+                Student s = compileStudentExcelData(sData, dataPosMap);
+                System.out.println("I am here 2");
+                if (adminModel.addStudent(s)) {
+                    cnt++;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        return cnt;
     }
 
 }

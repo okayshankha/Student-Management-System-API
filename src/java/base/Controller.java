@@ -8,12 +8,14 @@ package base;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -147,7 +149,7 @@ public class Controller extends HttpServlet {
         String s = "";
         if (request.getMethod().equals("POST")) {
             s = request.getParameter(name);
-            switch(name){
+            switch (name) {
                 case "pass":
                     s = (s != null) ? s : "Default";
                     break;
@@ -166,5 +168,7 @@ public class Controller extends HttpServlet {
         }
         return null;
     }
+
+
 
 }

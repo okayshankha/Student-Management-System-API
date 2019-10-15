@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.tmsl.pojo.Faculty;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -20,15 +21,88 @@ import javax.servlet.http.HttpServletRequest;
 public class Model {
 
     protected DB db = new DB(true);
-    
+    private static DB static_db = new DB(true);
+
     protected HttpServletRequest request;
 
     public Model() {
         Database.config("localhost", "shankha", "root", "project_database");
     }
-    
-    
-    
+
+    public String generateRoll() throws SQLException {
+        Integer roll = 0;
+        Random rand = new Random();
+        do {
+            roll = rand.nextInt(90000000) + 10000000;
+        } while (existsRoll(roll.toString()));
+
+        return roll.toString();
+    }
+
+    public boolean existsStudentEmail(String email) throws SQLException {
+
+        db.selectTable("student_master");
+        db.select_count("id");
+        db.where("email", email);
+
+        ResultSet rs = db.access();
+        if (rs.next()) {
+            if (Integer.parseInt(rs.getString("COUNT")) > 0) {
+                System.out.println("Student exists");
+                return true;
+                
+            }
+        }
+        System.out.println("Student does not exist");
+        return false;
+    }
+
+    public boolean existsRoll(String roll) throws SQLException {
+        db.selectTable("student_master");
+        db.select_count("id");
+
+        db.where("mca_university_roll_no", roll);
+        db.or_where("mca_university_registration_no", roll);
+
+        ResultSet rs = db.access();
+        if (rs.next()) {
+            if (Integer.parseInt(rs.getString("COUNT")) > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public String getRegByEmail(String email) throws SQLException {
+
+        db.selectTable("student_master");
+        db.select(new String[]{"mca_university_registration_no"});
+
+        db.or_where("email", email);
+
+        ResultSet rs = db.access();
+        if (rs.next()) {
+            return rs.getString("mca_university_registration_no");
+        }
+
+        return null;
+    }
+
+    public String getRollByEmail(String email) throws SQLException {
+
+        db.selectTable("student_master");
+        db.select(new String[]{"mca_university_roll_no"});
+
+        db.or_where("email", email);
+
+        ResultSet rs = db.access();
+        if (rs.next()) {
+            return rs.getString("mca_university_roll_no");
+        }
+
+        return null;
+    }
 
     public Faculty getFaculty(Faculty faculty) throws SQLException {
         Faculty output_faculty = new Faculty();
@@ -38,19 +112,15 @@ public class Model {
         if (faculty.getPassword().trim() != "" && !faculty.getPassword().trim().equals("adminRequest96")) {
             db.where("password", faculty.getPassword().trim());
         } else {
-            if(!faculty.getPassword().trim().equals("adminrequest96")){
+            if (!faculty.getPassword().trim().equals("adminrequest96")) {
                 return null;
             }
         }
-        
-        System.out.println("------------------------->>" + faculty);
-        
-       
 
         if (faculty != null && faculty.getEmail().trim() != "") {
             db.where("email", faculty.getEmail().trim());
         } else if (faculty != null && faculty.getUsername().trim() != "") {
-            if(!faculty.getPassword().trim().equals("adminrequest96")){
+            if (!faculty.getPassword().trim().equals("adminrequest96")) {
                 db.where("username", faculty.getUsername().trim());
             }
         }
@@ -74,10 +144,11 @@ public class Model {
         } else {
             return null;
         }
-        
+
         return output_faculty;
     }
 
+    /*
     public Faculty getFaculty(Faculty faculty, boolean b) throws SQLException {
         Faculty output_faculty = new Faculty();
 
@@ -111,6 +182,5 @@ public class Model {
         }
         return output_faculty;
     }
-
-
+     */
 }

@@ -42,7 +42,7 @@ public class AuthModel extends Model {
         ResultSet rs = db.access();
 
         while (rs.next()) {
-            if (Integer.parseInt(rs.getString("COUNT(`ID`)").trim()) > 0) {
+            if (Integer.parseInt(rs.getString("COUNT").trim()) > 0) {
                 result = true;
                 
             }

@@ -5,6 +5,8 @@
  */
 package com.tmsl.controller;
 
+import com.google.gson.Gson;
+import com.tmsl.pojo.Student;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -33,6 +35,8 @@ public class NewServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
+            Student n = new Student();
+            n.setFirst_name("Shankhadeep");
             /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
@@ -40,7 +44,8 @@ public class NewServlet extends HttpServlet {
             out.println("<title>Servlet NewServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet NewServlet at " + request.getContextPath() + "</h1>");
+            Gson j = new Gson();
+            out.println("<h1>Servlet NewServlet at " + j.toJson(n) + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }

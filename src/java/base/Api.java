@@ -13,6 +13,7 @@ import static com.sha.ExcelHandler.readExcel;
 import com.tmsl.capability.AdminCapability;
 import com.tmsl.model.AuthModel;
 import com.tmsl.pojo.Faculty;
+import com.tmsl.pojo.Student;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -295,23 +296,160 @@ public class Api extends Controller {
                 break;
             case "/upload/student_file":
                 try {
-                    String TEMP_FILE_DIR = "D:/";
+                    String TEMP_FILE_DIR = "D:\\";
                     String TEMP_FILE_NAME = "px2.xls";
-                    //Map<String, Object> output_ = capability.uploadStudentFile(TEMP_FILE_DIR, TEMP_FILE_NAME);
-                    Map<String, Object> output_ = new HashMap<>();
-                    output_.put("status", "success");
+                    Map<String, Object> output_ = capability.uploadStudentFile(TEMP_FILE_DIR, TEMP_FILE_NAME);
+
                     if (output_.get("status").equals("success")) {
                         HashMap<String, ArrayList<ArrayList<String>>> excelData = ExcelHandler.readExcel(TEMP_FILE_DIR + TEMP_FILE_NAME);
-                        for (HashMap.Entry<String, ArrayList<ArrayList<String>>> entry : excelData.entrySet()) {
-                            ArrayList<ArrayList<String>> data = entry.getValue();
+
+                        if (excelData != null) {
+                            String sheetName = null;
+                            for (HashMap.Entry<String, ArrayList<ArrayList<String>>> entry : excelData.entrySet()) {
+                                sheetName = entry.getKey();
+                                break;
+                            }
                             Map<String, Integer> dataPosMap = new HashMap<String, Integer>();
-                            dataPosMap = ExcelHandler.getDataPositionMapping(data);
-                            System.out.println("jhjhjhj");
-                            System.out.print(data);
+                            dataPosMap = ExcelHandler.getDataPositionMapping(excelData.get(sheetName));
+                            System.out.println("I am here 1");
+                            int cnt = capability.addStudents(excelData.get(sheetName), dataPosMap);
+
+                            output.put("status", "success");
+                            output.put("new_student_count", cnt);
+                        } else {
+                            output.put("status", "failed");
+                            output.put("info", "cannot read excel file");
                         }
+
                     } else {
                         output = output_;
                     }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println(ex);
+                }
+                break;
+            case "/student/get/bio":
+                try {
+                    String filter = gPost("filter");
+                    String filterValue = gPost("value");
+
+                    String filters[] = null;
+                    String values[] = null;
+                    boolean hasFilterRequest = false;
+                    boolean validFilterStucture = true;
+                    boolean invalidFilter = false;
+                    ArrayList<Student> studentList = null;
+
+                    if (!filter.equals("") && !filterValue.equals("")) {
+                        filters = filter.split("\\|", -1);
+                        values = filterValue.split("\\|", -1);
+                        ArrayList<String> validFilters = new ArrayList<String>();
+                        validFilters.add("email");              // Filters by email id
+                        validFilters.add("mobile");             // Filters by mobile
+                        validFilters.add("fname");              // Filters by first name
+                        validFilters.add("mname");              // Filters by middle name
+                        validFilters.add("lname");              // Filters by last name
+                        validFilters.add("roll");               // Filters by university roll number
+                        validFilters.add("reg");                // Filters by university registration number
+                        validFilters.add("passing_year");       // Filters by year of passing
+                        validFilters.add("sem");                // Filters by students current semester number
+
+                        for (String f : filters) {
+                            if (!validFilters.contains(f)) {
+                                invalidFilter = true;
+                                break;
+                            }
+                        }
+
+                        if (!invalidFilter) {
+                            if (filters.length == 0 || values.length == 0) {
+                                output.put("status", "failed");
+                                output.put("info", "filters/values or both parameters are empty");
+                            } else if (filters.length != values.length) {
+                                validFilterStucture = false;
+                                output.put("status", "failed");
+                                output.put("info", "unequal number of filters and values");
+                            } else {
+                                //do stuff here
+                                studentList = capability.getStudents(filters, values);
+                                output.put("status", "success");
+                                output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                                output.put("students", studentList);
+                            }
+                        } else {
+                            output.put("status", "failed");
+                            output.put("info", "one or more invalid filters found");
+                        }
+
+                    } else {
+                        //studentList = capability.getStudents(filters, values);
+                        studentList = capability.getStudents();
+
+                        output.put("status", "success");
+                        output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                        output.put("students", studentList);
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println(ex);
+                }
+                break;
+            case "/student/edit":
+                try {
+                    String filter = gPost("filter");
+                    String filterValue = gPost("value");
+
+                    String filters[] = null;
+                    String values[] = null;
+                    boolean hasFilterRequest = false;
+                    boolean validFilterStucture = true;
+                    boolean invalidFilter = false;
+                    ArrayList<Student> studentList = null;
+
+                    if (!filter.equals("") && !filterValue.equals("")) {
+                        filters = filter.split("\\|", -1);
+                        values = filterValue.split("\\|", -1);
+                        ArrayList<String> validFilters = new ArrayList<String>();
+                        validFilters.add("roll");               // Filters by university roll number
+
+                        for (String f : filters) {
+                            if (!validFilters.contains(f)) {
+                                invalidFilter = true;
+                                break;
+                            }
+                        }
+
+                        if (!invalidFilter) {
+                            if (filters.length == 0 || values.length == 0) {
+                                output.put("status", "failed");
+                                output.put("info", "filters/values or both parameters are empty");
+                            } else if (filters.length != values.length) {
+                                validFilterStucture = false;
+                                output.put("status", "failed");
+                                output.put("info", "unequal number of filters and values");
+                            } else {
+                                //do stuff here
+                                studentList = capability.getStudents(filters, values);
+                                output.put("status", "success");
+                                output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                                output.put("students", studentList);
+                            }
+                        } else {
+                            output.put("status", "failed");
+                            output.put("info", "one or more invalid filters found");
+                        }
+
+                    } else {
+                        //studentList = capability.getStudents(filters, values);
+                        studentList = capability.getStudents();
+
+                        output.put("status", "success");
+                        output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                        output.put("students", studentList);
+                    }
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println(ex);

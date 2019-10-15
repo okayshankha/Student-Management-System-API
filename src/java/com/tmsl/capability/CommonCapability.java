@@ -7,6 +7,7 @@ package com.tmsl.capability;
 
 import base.Controller;
 import base.Model;
+import com.google.gson.Gson;
 import com.tmsl.model.AdminModel;
 import com.tmsl.pojo.Faculty;
 import com.tmsl.pojo.Student;
@@ -94,13 +95,96 @@ public class CommonCapability extends Controller {
         student.setPermanent_pin_number(gPost("permanent_pin_number"));
         student.setPresent_post_office(gPost("present_post_office"));
         student.setPermanent_post_office(gPost("permanent_post_office"));
-        
+
         student.setPhysical_disability(gPost("physical_disability"));
         student.setAcademic_year_gap(gPost("academic_year_gap"));
         student.setSession_of_year_gap(gPost("session_of_year_gap"));
         student.setReason_of_year_gap(gPost("reason_of_year_gap"));
         student.setBlood_group(gPost("blood_group"));
 
+        return student;
+    }
+
+    protected Student compileStudentExcelData(ArrayList<String> sData, Map<String, Integer> positionMap) {
+
+        Student student = new Student();
+        student.setFirst_name(sData.get(positionMap.get("First Name")));
+        student.setMiddle_name(sData.get(positionMap.get("Middle Name")));
+        student.setLast_name(sData.get(positionMap.get("Last Name")));
+        student.setMobile_number(sData.get(positionMap.get("Mobile")));
+        student.setEmail(sData.get(positionMap.get("Email")));
+        student.setSex(sData.get(positionMap.get("Sex")));
+        student.setDob(sData.get(positionMap.get("DOB(DD/MM/YYYY)")));
+
+        student.set10_th_exam_name(sData.get(positionMap.get("10th Exam Name")));
+        student.set10_th_passing_year(sData.get(positionMap.get("10th passing year")));
+        student.set10_th_board(sData.get(positionMap.get("10th board name")));
+        student.set10_th_school_name(sData.get(positionMap.get("10th school name")));
+        student.set10_th_language_medium(sData.get(positionMap.get("10th language medium")));
+        student.set10_th_standard_marks(sData.get(positionMap.get("10th Standard marks")));
+        student.set10_th_actual_marks(sData.get(positionMap.get("10th Obtained marks")));
+        student.set10_th_math_percentage(sData.get(positionMap.get("10th math percentage")));
+
+        student.set12_th_exam_name(sData.get(positionMap.get("12th Exam Name")));
+        student.set12_th_passing_year(sData.get(positionMap.get("12th passing year")));
+        student.set12_th_board(sData.get(positionMap.get("12th board name")));
+        student.set12_th_school_name(sData.get(positionMap.get("12th school name")));
+        student.set12_th_language_medium(sData.get(positionMap.get("12th language medium")));
+        student.set12_th_standard_marks(sData.get(positionMap.get("12th standard marks")));
+        student.set12_th_actual_marks(sData.get(positionMap.get("12th obtained marks")));
+        student.set12_th_math_percentage(sData.get(positionMap.get("12th math percentage")));
+
+        student.setDiploma_university(sData.get(positionMap.get("Diploma university")));
+        student.setDiploma_stream(sData.get(positionMap.get("Diploma stream")));
+        student.setDiploma_passing_year(sData.get(positionMap.get("Diploma passing year")));
+        student.setDiploma_marks(sData.get(positionMap.get("Diploma obtained marks")));
+
+        student.setGraduation_university(sData.get(positionMap.get("Graduation university")));
+        student.setGraduation_stream(sData.get(positionMap.get("Graduation stream")));
+        student.setGraduation_passing_year(sData.get(positionMap.get("Graduation passing year")));
+        student.setGraduation_marks(sData.get(positionMap.get("Graduation obtained marks")));
+
+        student.setMca_entrance_exam_name(sData.get(positionMap.get("MCA entrance test name")));
+        student.setMca_entrance_rank(sData.get(positionMap.get("MCA entrance test rank")));
+        student.setMca_college_name(sData.get(positionMap.get("MCA college name")));
+        student.setMca_university(sData.get(positionMap.get("MCA university")));
+        student.setMca_stream(sData.get(positionMap.get("MCA stream")));
+        student.setMca_course_duration(sData.get(positionMap.get("MCA course duration")));
+        student.setMca_university_registration_no(sData.get(positionMap.get("MCA university registration no")));
+        student.setMca_university_roll_no(sData.get(positionMap.get("MCA university roll no")));
+        student.setMca_academic_session(sData.get(positionMap.get("MCA course duration")));
+
+        student.setFathers_name(sData.get(positionMap.get("Fathers Name")));
+        student.setFathers_occupation(sData.get(positionMap.get("Fathers occupation")));
+        student.setMothers_name(sData.get(positionMap.get("Mothers name")));
+        student.setMothers_occupation(sData.get(positionMap.get("Mothers occupation")));
+        student.setGurdains_name(sData.get(positionMap.get("Gurdains name")));
+        student.setGurdains_occupation(sData.get(positionMap.get("Gurdains occupation")));
+        student.setGurdains_relation(sData.get(positionMap.get("Gurdains relation")));
+
+        student.setPresent_address(sData.get(positionMap.get("Present address")));
+        student.setPermanent_address(sData.get(positionMap.get("Permanent address")));
+        student.setPresent_state(sData.get(positionMap.get("Present state")));
+        student.setPermanent_state(sData.get(positionMap.get("Permanent state")));
+        student.setPresent_city(sData.get(positionMap.get("Present city")));
+        student.setPermanent_city(sData.get(positionMap.get("Permanent city")));
+        student.setPresent_district(sData.get(positionMap.get("Present district")));
+        student.setPermanent_district(sData.get(positionMap.get("Permanent district")));
+        student.setPresent_pin_number(sData.get(positionMap.get("Present pin number")));
+        student.setPermanent_pin_number(sData.get(positionMap.get("Permanent pin number")));
+        student.setPresent_post_office(sData.get(positionMap.get("Present post office")));
+        student.setPermanent_post_office(sData.get(positionMap.get("Permanent post office")));
+
+        student.setPhysical_disability(sData.get(positionMap.get("Physical disability")));
+        student.setAcademic_year_gap(sData.get(positionMap.get("Number of academic year gap")));
+        student.setSession_of_year_gap(sData.get(positionMap.get("Session of year gap")));
+        student.setReason_of_year_gap(sData.get(positionMap.get("Reason of year gap")));
+        student.setBlood_group(sData.get(positionMap.get("Blood group")));
+/*
+        Gson gson = new Gson();
+        String json = gson.toJson(student);
+        System.out.println("Att ------->" + json);
+*/
         return student;
     }
 
