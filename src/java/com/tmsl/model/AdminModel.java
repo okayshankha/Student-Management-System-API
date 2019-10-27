@@ -8,12 +8,14 @@ package com.tmsl.model;
 import base.Controller;
 import base.Model;
 import com.google.gson.Gson;
+import com.mysql.cj.xdevapi.Result;
 import com.tmsl.pojo.Faculty;
 import com.tmsl.pojo.Student;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -172,7 +174,7 @@ public class AdminModel extends Model {
         return all_faculties;
     }
 
-    public ArrayList<Faculty> getAllFaculty() throws SQLException {
+    private ArrayList<Faculty> getAllFaculty() throws SQLException {
         ArrayList<Faculty> all_faculties = new ArrayList<Faculty>();
 
         db.selectTable("faculty_master");
@@ -307,90 +309,7 @@ public class AdminModel extends Model {
     /**
      * Student Section
      */
-    private ArrayList<Student> compileStudentsDataFromResultSet(ResultSet rs) throws SQLException {
-        ArrayList<Student> list = new ArrayList<Student>();
-        while (rs.next()) {
-            Student student = new Student();
-            student.setFirst_name(rs.getString("first_name"));
-            student.setMiddle_name(rs.getString("middle_name"));
-            student.setLast_name(rs.getString("last_name"));
-            student.setMobile_number(rs.getString("mobile_number"));
-            student.setEmail(rs.getString("email"));
-            student.setSex(rs.getString("sex"));
-            student.setDob(rs.getString("dob"));
 
-            student.set10_th_exam_name(rs.getString("10_th_exam_name"));
-            student.set10_th_passing_year(rs.getString("10_th_passing_year"));
-            student.set10_th_board(rs.getString("10_th_board"));
-            student.set10_th_school_name(rs.getString("10_th_school_name"));
-            student.set10_th_language_medium(rs.getString("10_th_language_medium"));
-            student.set10_th_standard_marks(rs.getString("10_th_standard_marks"));
-            student.set10_th_actual_marks(rs.getString("10_th_actual_marks"));
-            student.set10_th_math_percentage(rs.getString("10_th_math_percentage"));
-
-            student.set12_th_exam_name(rs.getString("12_th_exam_name"));
-            student.set12_th_passing_year(rs.getString("12_th_passing_year"));
-            student.set12_th_board(rs.getString("12_th_board"));
-            student.set12_th_school_name(rs.getString("12_th_school_name"));
-            student.set12_th_language_medium(rs.getString("12_th_language_medium"));
-            student.set12_th_standard_marks(rs.getString("12_th_standard_marks"));
-            student.set12_th_actual_marks(rs.getString("12_th_actual_marks"));
-            student.set12_th_math_percentage(rs.getString("12_th_math_percentage"));
-
-            student.setDiploma_university(rs.getString("diploma_university"));
-            student.setDiploma_stream(rs.getString("diploma_stream"));
-            student.setDiploma_passing_year(rs.getString("diploma_passing_year"));
-            student.setDiploma_marks(rs.getString("diploma_marks"));
-
-            student.setGraduation_university(rs.getString("graduation_university"));
-            student.setGraduation_stream(rs.getString("graduation_stream"));
-            student.setGraduation_passing_year(rs.getString("graduation_passing_year"));
-            student.setGraduation_marks(rs.getString("graduation_marks"));
-
-            student.setMca_entrance_exam_name(rs.getString("mca_entrance_exam_name"));
-            student.setMca_entrance_rank(rs.getString("mca_entrance_rank"));
-            student.setMca_college_name(rs.getString("mca_college_name"));
-            student.setMca_university(rs.getString("mca_university"));
-            student.setMca_stream(rs.getString("mca_stream"));
-            student.setMca_course_duration(rs.getString("mca_course_duration"));
-
-            student.setMca_university_registration_no(rs.getString("mca_university_registration_no"));
-            student.setMca_university_roll_no(rs.getString("mca_university_roll_no"));
-
-            student.setMca_academic_session(rs.getString("mca_academic_session"));
-
-            student.setFathers_name(rs.getString("fathers_name"));
-            student.setFathers_occupation(rs.getString("fathers_occupation"));
-            student.setMothers_name(rs.getString("mothers_name"));
-            student.setMothers_occupation(rs.getString("mothers_occupation"));
-            student.setGurdains_name(rs.getString("gurdains_name"));
-            student.setGurdains_occupation(rs.getString("gurdains_occupation"));
-            student.setGurdains_relation(rs.getString("gurdains_relation"));
-
-            student.setPresent_address(rs.getString("present_address"));
-            student.setPermanent_address(rs.getString("permanent_address"));
-            student.setPresent_state(rs.getString("present_state"));
-            student.setPermanent_state(rs.getString("permanent_state"));
-
-            student.setPresent_city(rs.getString("present_city"));
-            student.setPermanent_city(rs.getString("permanent_city"));
-            student.setPresent_district(rs.getString("present_district"));
-            student.setPermanent_district(rs.getString("permanent_district"));
-            student.setPresent_pin_number(rs.getString("present_pin_number"));
-            student.setPermanent_pin_number(rs.getString("permanent_pin_number"));
-            student.setPresent_post_office(rs.getString("present_post_office"));
-            student.setPermanent_post_office(rs.getString("permanent_post_office"));
-
-            student.setPhysical_disability(rs.getString("physical_disability"));
-            student.setAcademic_year_gap(rs.getString("academic_year_gap"));
-            student.setSession_of_year_gap(rs.getString("session_of_year_gap"));
-            student.setReason_of_year_gap(rs.getString("reason_of_year_gap"));
-            student.setBlood_group(rs.getString("blood_group"));
-
-            list.add(student);
-        }
-        return list;
-    }
 
     public ArrayList<Student> getAllStudent() throws SQLException {
         db.selectTable("student_master");
@@ -529,7 +448,6 @@ public class AdminModel extends Model {
         data.put("blood_group", (String) student.getBlood_group());
 
         System.out.println("AdminModel ready");
-        
 
         //System.exit(0);
         if (needToUpdateData) {
@@ -537,15 +455,18 @@ public class AdminModel extends Model {
             db.where("email", (String) student.getEmail());
             System.out.println("update setup");
         } else {
-            
+
             db.insert("student_master", data);
             System.out.println("insert setup");
         }
 
         System.out.println(db.getQueryString());
         db.access();
-        
-        if (!needToUpdateData) setStudentSemester(data.get("mca_university_roll_no"), "1");
+
+        if (!needToUpdateData) {
+            setStudentSemester(data.get("mca_university_roll_no"), "1");
+            System.out.println("Semester ");
+        }
 
         db.selectTable("student_master");
         db.select_count("id");
@@ -563,32 +484,61 @@ public class AdminModel extends Model {
         }
     }
 
+    /**
+     *
+     * @param roll
+     * @return
+     * @throws SQLException Returns Student semester number. Returns -1 if
+     * student data not found. Returns 7 for passed out students.
+     */
     public String getStudentSemester(String roll) throws SQLException {
         String semNum = "-1";
 
         db.selectTable("student_semester_map");
-        db.select(new String[]{"mca_university_roll_no"});
-        db.where("semester", roll);
+        db.select(new String[]{"semester"});
+        db.where("mca_university_roll_no", roll);
+        System.out.println(db.getQueryString());
         ResultSet rs = db.access();
 
         if (rs.next()) {
-            semNum = rs.getString("mca_university_roll_no");
+            semNum = rs.getString("semester");
+        } else {
+            System.out.println("Non-existing roll number!");
         }
 
         return semNum;
     }
 
+    /**
+     *
+     * @param roll
+     * @param sem
+     * @return
+     * @throws SQLException Sets the student semester number
+     */
     public boolean setStudentSemester(String roll, String sem) throws SQLException {
 
         String _sem = getStudentSemester(roll);
         if (_sem.equals("-1")) {
-            db.selectTable("student_mester");
-            db.select_count("id");
-            db.where("mca_university_roll_no", roll);
-            ResultSet rs = db.access();
+            //db.selectTable("student_master");
+            //db.select_count("id");
+            //db.where("mca_university_roll_no", roll);
+            //ResultSet rs = db.access();
 
+            ArrayList<Student> list = getAllStudent(new String[]{"roll"}, new String[]{roll});
+            int len = list.size();
+            if (len == 1) {
+                Map<String, String> data = new HashMap<>();
+                data.put("mca_university_roll_no", roll);
+                data.put("semester", sem);
+                db.insert("student_semester_map", data);
+                db.access();
+                return true;
+            }
+
+            /*
             if (rs.next()) {
-                if (Integer.parseInt(rs.getString("COUNT")) > 0) {
+                if (len == 1) {
                     Map<String, String> data = new HashMap<>();
                     data.put("mca_university_roll_no", roll);
                     data.put("semester", sem);
@@ -596,7 +546,7 @@ public class AdminModel extends Model {
                     db.access();
                     return true;
                 }
-            }
+            }*/
             return false;
 
         } else {
@@ -605,9 +555,247 @@ public class AdminModel extends Model {
             db.update("student_semester_map", data);
             db.where("mca_university_roll_no", roll);
             db.access();
+            if (getStudentSemester(roll).equals(sem)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+    }
+
+    public boolean promoteStudentSemester(String roll) throws SQLException {
+        String _sem = getStudentSemester(roll);
+        Integer nextSem = Integer.parseInt(_sem) + 1;
+        if(nextSem == 8){
+            return false;
+        }
+        if (!_sem.equals("-1")) {
+            return setStudentSemester(roll, nextSem.toString());
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param roll
+     * @param subjectCode
+     * @param marks
+     * @param year
+     * @return
+     * @throws SQLException Inserts new Student Marks and also update an
+     * existing marks
+     */
+    public Map<String, Object> getStudentMarks(String roll, String[] filters, String[] values, String orderBy) throws SQLException {
+        Map<String, Object> data = new HashMap<>();
+        data.put("found", 0);
+        int cnt = 0;
+
+        db.joinTables(new String[]{"student_master", "student_marks_map", "subject_semester_map"});
+        db.select(new String[]{"A.first_name", "A.middle_name", "A.last_name", "B.mca_university_roll_no", "B.marks", "C.subject_name", "C.subject_code"});
+        db.where("A.mca_university_roll_no", "B.mca_university_roll_no");
+        db.where("B.subject_id", "C.id");
+
+        for (int i = 0; i < filters.length; i++) {
+            switch (filters[i]) {
+                case "marks_above":
+                    db.where("B.marks", ">= " + values[i].trim());
+                    break;
+                case "subject_code":
+                    db.where("C.subject_code", values[i].trim());
+                    break;
+                case "roll":
+                    db.where("A.mca_university_roll_no", values[i].trim());
+                    break;
+                case "year":
+                    db.where("B.year", values[i].trim());
+                    break;
+                case "passing_year":
+                    db.where("A.mca_academic_session", (Integer.parseInt(values[i].trim()) - 3) + "-" + values[i].trim());
+                    break;
+
+            }
+        }
+
+        System.out.println(db.getQueryString());
+
+        ResultSet rs = db.access();
+
+        while (rs.next()) {
+            data.put("found", ++cnt);
+            String sRoll = rs.getString("mca_university_roll_no");
+            if (data.containsKey(sRoll)) {
+
+                Map<String, Object> temp1 = (Map<String, Object>) data.get(sRoll);
+                ArrayList<Map<String, String>> list = (ArrayList<Map<String, String>>) temp1.get("result");
+
+                Map<String, String> _dataMarks = new HashMap<>();
+
+                _dataMarks.put("subject_name", rs.getString("subject_name"));
+                _dataMarks.put("subject_code", rs.getString("subject_code"));
+                _dataMarks.put("marks", rs.getString("marks"));
+
+                list.add(_dataMarks);
+
+                temp1.put("result", list);
+
+                data.put(sRoll, temp1);
+
+            } else {
+                Map<String, Object> _data = new HashMap<>();
+                _data.put("first_name", rs.getString("first_name"));
+                _data.put("middle_name", rs.getString("middle_name"));
+                _data.put("last_name", rs.getString("last_name"));
+
+                Map<String, String> _dataMarks = new HashMap<>();
+
+                _dataMarks.put("subject_name", rs.getString("subject_name"));
+                _dataMarks.put("subject_code", rs.getString("subject_code"));
+                _dataMarks.put("marks", rs.getString("marks"));
+
+                ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
+                list.add(_dataMarks);
+
+                _data.put("result", list);
+
+                data.put(sRoll, _data);
+
+            }
+        }
+        return (data.size() != 0) ? data : null;
+    }
+
+    /**
+     *
+     * @param roll
+     * @param subjectCode
+     * @param marks
+     * @param year
+     * @return
+     * @throws SQLException Inserts new Student Marks and also update an
+     * existing marks
+     */
+    public boolean setStudentMarks(String roll, String subjectCode, String marks, String year) throws SQLException {
+        subjectCode = subjectCode.toUpperCase();
+        if (!getStudentSemester(roll).equals(getSubjectSemester(subjectCode))) {
+            System.out.println();
+            System.out.println("-------------------------------------------------------------------");
+            System.out.println("| Subject doesn't belong to the semester the student enrolled in. |");
+            System.out.println("-------------------------------------------------------------------");
+            return false;
+        }
+        String subjectID = getSubjectID(subjectCode);
+        ResultSet rs;
+        db.selectTable("student_marks_map");
+        db.select_count("id");
+        db.where("mca_university_roll_no", roll);
+        db.where("subject_id", subjectID);
+        rs = db.access();
+
+        Map<String, String> data = new HashMap<>();
+        data.put("mca_university_roll_no", roll);
+        data.put("subject_id", subjectID);
+        data.put("marks", marks);
+        data.put("year", year);
+        if (rs.next()) {
+            if (rs.getString("COUNT").equals("0")) {
+                db.insert("student_marks_map", data);
+            } else if (rs.getString("COUNT").equals("1")) {
+                db.update("student_marks_map", data);
+                db.where("mca_university_roll_no", roll);
+                db.where("subject_id", subjectID);
+            } else {
+                return false;
+            }
+            db.access();
             return true;
         }
 
+        return false;
+    }
+
+    public Map<String, Object> getRunnerups(String year) throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+
+        String query1 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `project_database`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `project_database`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND B.`year` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
+        //String query1 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `W7CEGX1euX`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `W7CEGX1euX`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND B.`year` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
+        
+        //String query2 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `project_database`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `project_database`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
+
+        String query = null;
+        String[] params = null;
+
+        if (!year.equals("")) {
+            params = new String[]{"1", year};
+            query = query1;
+        } else {
+            result.put("warning", "please specify the year");
+            return result;
+        }
+
+        for (int i = 1; i <= 6; i++) {
+
+            params[0] = i + "";
+            ResultSet rs = db.access(query, params);
+            ArrayList<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+
+            while (rs.next()) {
+                Map<String, Object> _data = new HashMap<>();
+                _data.put("first_name", rs.getString("first_name"));
+                _data.put("middle_name", rs.getString("middle_name"));
+                _data.put("last_name", rs.getString("last_name"));
+
+                _data.put("roll", rs.getString("mca_university_roll_no"));
+                _data.put("year", rs.getString("year"));
+                _data.put("total_marks", rs.getString("total_marks"));
+
+                resultList.add(_data);
+            }
+            result.put(params[0], resultList);
+        }
+        return result;
+    }
+
+    public Map<String, Object> getSubjects() throws SQLException {
+        db.selectTable("subject_semester_map");
+        db.select(new String[]{"*"});
+        ResultSet rs = db.access();
+
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        while (rs.next()) {
+            if (result.containsKey(rs.getString("subject_semester"))) {
+                List<Map<String, Object>> subList = (List<Map<String, Object>>)result.get(rs.getString("subject_semester"));
+                Map<String, Object> _result = new HashMap<String, Object>();
+                _result.put("id", rs.getString("id"));
+                _result.put("subject_name", rs.getString("subject_name"));
+                _result.put("subject_code", rs.getString("subject_code"));
+                
+                subList.add(_result);
+                result.put(rs.getString("subject_semester"), subList);
+
+            } else {
+                List<Map<String, Object>> subList = new ArrayList<Map<String, Object>>();
+                Map<String, Object> _result = new HashMap<String, Object>();
+                _result.put("id", rs.getString("id"));
+                _result.put("subject_name", rs.getString("subject_name"));
+                _result.put("subject_code", rs.getString("subject_code"));
+                
+                subList.add(_result);
+                result.put(rs.getString("subject_semester"), subList);
+            }
+
+        }
+        
+        return result;
+    }
+    
+    public boolean assignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
+        return super.assignFacultyToSubject(facultyID,subjectID);
+    }
+    
+    public boolean unassignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
+        return super.unassignFacultyToSubject(facultyID,subjectID);
     }
 
 }

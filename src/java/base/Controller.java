@@ -163,10 +163,20 @@ public class Controller extends HttpServlet {
     }
 
     public String gGet(String name) {
+        String s = "";
         if (request.getMethod().equals("GET")) {
-            return request.getParameter(name);
+            s = request.getParameter(name);
+            switch (name) {
+                case "pass":
+                    s = (s != null) ? s : "Default";
+                    break;
+                default:
+                    //System.out.println("Post : " + name + " : " + s);
+                    s = (s != null) ? s : "";
+            }
+            return s;
         }
-        return null;
+        return s;
     }
 
 

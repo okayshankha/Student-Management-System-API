@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class CommonCapability extends Controller {
 
-    public Model adminModel;
+    public Model model;
 
     protected Student compileStudentPostData() {
 
@@ -210,5 +210,7 @@ public class CommonCapability extends Controller {
 
         return faculty;
     }
+    
+
 
 }

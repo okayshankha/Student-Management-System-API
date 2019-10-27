@@ -17,6 +17,7 @@ public class Student {
     private String middle_name;
     private String last_name;
     private String email;
+    private String password;
 
     private String mobile_number;
     private String sex;
@@ -117,6 +118,14 @@ public class Student {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getFirst_name() {
