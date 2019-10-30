@@ -26,7 +26,10 @@ public class AdminModel extends Model {
 
     /**
      *
-     * Faculty Section
+     * Return Faculty Filtered by Mobile Number
+     * @param mob
+     * @return 
+     * @throws java.sql.SQLException 
      */
     public Faculty getFacultyByMobile(String mob) throws SQLException {
         Faculty faculty = null;
@@ -57,6 +60,12 @@ public class AdminModel extends Model {
         return faculty;
     }
 
+    /**
+     * Return Faculty Filtered by Mobile email
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public Faculty getFacultyByEmail(String email) throws SQLException {
         Faculty faculty = null;
 
@@ -84,6 +93,14 @@ public class AdminModel extends Model {
         return faculty;
     }
 
+    /**
+     * Return Faculty Filtered by Mobile type
+     * @param type
+     * @param filterType
+     * @param filterValue
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Faculty> getAllFacultyByType(String type, String filterType, String filterValue) throws SQLException {
         ArrayList<Faculty> all_faculties = new ArrayList<Faculty>();
 
@@ -134,6 +151,12 @@ public class AdminModel extends Model {
         return all_faculties;
     }
 
+    /**
+     * Return Faculty Filtered by Mobile type
+     * @param type
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Faculty> getAllFacultyByType(String type) throws SQLException {
         ArrayList<Faculty> all_faculties = new ArrayList<Faculty>();
 
@@ -198,6 +221,12 @@ public class AdminModel extends Model {
         return all_faculties;
     }
 
+    /**
+     * Adds New Faculty
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public boolean addFaculty(Faculty faculty) throws SQLException {
         Map<String, String> data = new HashMap<String, String>();
 
@@ -230,6 +259,12 @@ public class AdminModel extends Model {
         }
     }
 
+    /**
+     * Deletes New Faculty
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public boolean deleteFaculty(Faculty faculty) throws SQLException {
         db.selectTable("faculty_master");
         db.where("email", faculty.getEmail().trim());
@@ -253,6 +288,12 @@ public class AdminModel extends Model {
 
     }
 
+    /**
+     * Checks if Faculty Exists
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public String existsFaculty(Faculty faculty) throws SQLException {
         int cnt = 0;
         if (faculty.getEmail().trim().equals("")) {
@@ -307,10 +348,10 @@ public class AdminModel extends Model {
     }
 
     /**
-     * Student Section
+     * Returns all Student data
+     * @return 
+     * @throws java.sql.SQLException
      */
-
-
     public ArrayList<Student> getAllStudent() throws SQLException {
         db.selectTable("student_master");
         db.select(new String[]{"*"});
@@ -319,6 +360,13 @@ public class AdminModel extends Model {
         return list;
     }
 
+    /**
+     * Returns all Student data (With Filter)
+     * @param filters
+     * @param values
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Student> getAllStudent(String[] filters, String[] values) throws SQLException {
         db.selectTable("student_master");
         db.select(new String[]{"*"});
@@ -362,6 +410,12 @@ public class AdminModel extends Model {
         return list;
     }
 
+    /**
+     * Adds Single Student
+     * @param student
+     * @return
+     * @throws SQLException
+     */
     public boolean addStudent(Student student) throws SQLException {
         Map<String, String> data = new HashMap<String, String>();
         boolean needToUpdateData = existsStudentEmail(student.getEmail());
@@ -485,7 +539,7 @@ public class AdminModel extends Model {
     }
 
     /**
-     *
+     * Get Student Semester by Roll
      * @param roll
      * @return
      * @throws SQLException Returns Student semester number. Returns -1 if
@@ -510,7 +564,7 @@ public class AdminModel extends Model {
     }
 
     /**
-     *
+     * Set Student Semester by Roll
      * @param roll
      * @param sem
      * @return
@@ -564,6 +618,12 @@ public class AdminModel extends Model {
 
     }
 
+    /**
+     * Promote Student Semester
+     * @param roll
+     * @return
+     * @throws SQLException
+     */
     public boolean promoteStudentSemester(String roll) throws SQLException {
         String _sem = getStudentSemester(roll);
         Integer nextSem = Integer.parseInt(_sem) + 1;
@@ -577,24 +637,23 @@ public class AdminModel extends Model {
     }
 
     /**
-     *
-     * @param roll
-     * @param subjectCode
-     * @param marks
-     * @param year
+     * Get Student Marks
+     * @param filters
+     * @param values
+     * @param orderBy
      * @return
      * @throws SQLException Inserts new Student Marks and also update an
      * existing marks
      */
-    public Map<String, Object> getStudentMarks(String roll, String[] filters, String[] values, String orderBy) throws SQLException {
+    public Map<String, Object> getStudentMarks(String[] filters, String[] values, String orderBy) throws SQLException {
         Map<String, Object> data = new HashMap<>();
-        data.put("found", 0);
         int cnt = 0;
 
         db.joinTables(new String[]{"student_master", "student_marks_map", "subject_semester_map"});
-        db.select(new String[]{"A.first_name", "A.middle_name", "A.last_name", "B.mca_university_roll_no", "B.marks", "C.subject_name", "C.subject_code"});
+        db.select(new String[]{"A.first_name", "A.middle_name", "A.last_name", "B.mca_university_roll_no", "B.marks", "B.year", "C.subject_name", "C.subject_code"});
         db.where("A.mca_university_roll_no", "B.mca_university_roll_no");
         db.where("B.subject_id", "C.id");
+        db.orderBy(new String[]{"B.year"});
 
         for (int i = 0; i < filters.length; i++) {
             switch (filters[i]) {
@@ -613,16 +672,20 @@ public class AdminModel extends Model {
                 case "passing_year":
                     db.where("A.mca_academic_session", (Integer.parseInt(values[i].trim()) - 3) + "-" + values[i].trim());
                     break;
+                case "sem":
+                    db.where("C.subject_semester", values[i].trim());
+                break;
 
             }
         }
 
-        System.out.println(db.getQueryString());
+        //System.out.println(db.getQueryString());
 
         ResultSet rs = db.access();
 
         while (rs.next()) {
-            data.put("found", ++cnt);
+            ++cnt;
+            //data.put("found", ++cnt);
             String sRoll = rs.getString("mca_university_roll_no");
             if (data.containsKey(sRoll)) {
 
@@ -634,6 +697,7 @@ public class AdminModel extends Model {
                 _dataMarks.put("subject_name", rs.getString("subject_name"));
                 _dataMarks.put("subject_code", rs.getString("subject_code"));
                 _dataMarks.put("marks", rs.getString("marks"));
+                _dataMarks.put("year", rs.getString("year"));
 
                 list.add(_dataMarks);
 
@@ -646,12 +710,14 @@ public class AdminModel extends Model {
                 _data.put("first_name", rs.getString("first_name"));
                 _data.put("middle_name", rs.getString("middle_name"));
                 _data.put("last_name", rs.getString("last_name"));
+                
 
                 Map<String, String> _dataMarks = new HashMap<>();
 
                 _dataMarks.put("subject_name", rs.getString("subject_name"));
                 _dataMarks.put("subject_code", rs.getString("subject_code"));
                 _dataMarks.put("marks", rs.getString("marks"));
+                _dataMarks.put("year", rs.getString("year"));
 
                 ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
                 list.add(_dataMarks);
@@ -662,11 +728,14 @@ public class AdminModel extends Model {
 
             }
         }
-        return (data.size() != 0) ? data : null;
+        Map<String, Object> d2 = new HashMap<>();
+        d2.put("student_marks", data);
+        d2.put("found", cnt);
+        return (d2.size() != 0) ? d2 : null;
     }
 
     /**
-     *
+     * Set Student Marks
      * @param roll
      * @param subjectCode
      * @param marks
@@ -714,6 +783,12 @@ public class AdminModel extends Model {
         return false;
     }
 
+    /**
+     * Get Runner ups
+     * @param year
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getRunnerups(String year) throws SQLException {
         Map<String, Object> result = new HashMap<>();
 
@@ -756,6 +831,11 @@ public class AdminModel extends Model {
         return result;
     }
 
+    /**
+     * Get Subjects
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getSubjects() throws SQLException {
         db.selectTable("subject_semester_map");
         db.select(new String[]{"*"});
@@ -790,10 +870,12 @@ public class AdminModel extends Model {
         return result;
     }
     
+    @Override
     public boolean assignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
         return super.assignFacultyToSubject(facultyID,subjectID);
     }
     
+    @Override
     public boolean unassignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
         return super.unassignFacultyToSubject(facultyID,subjectID);
     }

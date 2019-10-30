@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -23,11 +24,54 @@ import java.util.Map;
 public class HodCapability extends CommonCapability {
 
     HodModel hodModel = new HodModel();
-    
-    public void closeConnection() throws SQLException{
+
+    /**
+     * Ends MySQL connection
+     * @throws SQLException
+     */
+    public void closeConnection() throws SQLException {
         hodModel.closeConnection();
     }
 
+    /**
+     * Submits New Notice
+     * @return
+     * @throws SQLException
+     */
+    public boolean submitNotice() throws SQLException {
+        String content = gPost("content");
+        HttpSession session = request.getSession();
+        String faculty_type = session.getAttribute("faculty_type").toString();
+
+        if (faculty_type.equals("1") || faculty_type.equals("2") || faculty_type.equals("3")) {
+            String faculty_id = hodModel.getFacultyID(session.getAttribute("email").toString());
+
+            hodModel.postNotice(faculty_id, content);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Returns All Notices (Optional filter by faculty email)
+     * @return
+     * @throws SQLException
+     */
+    public Map<String, Object> getNotice() throws SQLException {
+        String faculty_id = hodModel.getFacultyID(gPost("email"));
+        if (faculty_id == null) {
+            faculty_id = "";
+        }
+        return hodModel.getNotice(faculty_id);
+    }
+
+    /**
+     * Returns All Faculty Details
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getAllFaculty() throws SQLException {
         String uType = loggedInFacultyType();
         if (uType.equals("1") || uType.equals("2")) {
@@ -40,6 +84,11 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Returns All HOD Details
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getHod() throws SQLException {
         String uType = loggedInFacultyType();
         if (uType.equals("1") || uType.equals("2")) {
@@ -52,6 +101,12 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Returns All Coordinator Details
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getCoordinator(String email) throws SQLException {
         String uType = loggedInFacultyType();
         if (uType.equals("1") || uType.equals("2")) {
@@ -64,6 +119,11 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Returns All Teacher Details
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getTeacher() throws SQLException {
         String uType = loggedInFacultyType();
         if (uType.equals("1") || uType.equals("2")) {
@@ -76,7 +136,11 @@ public class HodCapability extends CommonCapability {
         }
     }
 
-
+    /**
+     * Adds new Coordinator
+     * @return
+     * @throws SQLException
+     */
     public boolean addCoordinator() throws SQLException {
         boolean status = false;
         if (!isLoggedIn()) {
@@ -90,6 +154,11 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Adds new Teacher
+     * @return
+     * @throws SQLException
+     */
     public boolean addTeacher() throws SQLException {
         boolean status = false;
         if (!isLoggedIn()) {
@@ -103,6 +172,11 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Deletes Teacher or Coordinator
+     * @return
+     * @throws SQLException
+     */
     public boolean deletetFaculty() throws SQLException {
         String email = gPost("email");
         Faculty faculty = new Faculty();
@@ -115,6 +189,11 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Checks Faculty Un-uniqueNess
+     * @return
+     * @throws SQLException
+     */
     public String checkFacultyUnUniqueNess() throws SQLException {
         if (!isLoggedIn()) {
             return null;
@@ -124,6 +203,12 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Get Faculty By Type
+     * @param s
+     * @return
+     * @throws SQLException
+     */
     protected Map<String, Object> getFacultysByType(String s) throws SQLException {
         String email = gPost("email");
 
@@ -153,6 +238,12 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Get Faculty By email
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     protected Faculty getFacultyByEmail(String email) throws SQLException {
         if (!isLoggedIn()) {
             return null;
@@ -163,6 +254,12 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+    /**
+     * Get Faculty By Mobile
+     * @param mob
+     * @return
+     * @throws SQLException
+     */
     protected Faculty getFacultyByMobile(String mob) throws SQLException {
         if (!isLoggedIn()) {
             return null;
@@ -173,53 +270,25 @@ public class HodCapability extends CommonCapability {
         }
     }
 
+
     /**
-     * Student Part
+     * Get All Students
+     * @return
+     * @throws SQLException
      */
-    public Map<String, Object> uploadStudentFile(String dir, String name) {
-        Map<String, Object> output = new HashMap<>();
-        output.put("status", "failed");
-        String UPLOAD_DIRECTORY = dir;
-        try {
-            if (org.apache.commons.fileupload.servlet.ServletFileUpload.isMultipartContent(request)) {
-                try {
-                    List<org.apache.commons.fileupload.FileItem> multiparts = new org.apache.commons.fileupload.servlet.ServletFileUpload(
-                            new org.apache.commons.fileupload.disk.DiskFileItemFactory()).parseRequest(request);
-
-                    for (org.apache.commons.fileupload.FileItem item : multiparts) {
-                        if (!item.isFormField()) {
-                            String fileExt = item.getName().split("\\.")[1];
-                            if (!fileExt.equals("xls")) {
-                                output.put("info", "invalid file extention");
-                                return output;
-                            }
-                            name = new File(name).getName();
-                            item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
-                        }
-                    }
-
-                    //File uploaded successfully
-                    output.put("status", "success");
-                    output.put("info", "File Uploaded Successfully");
-                } catch (Exception ex) {
-                    output.put("info", "File Upload Failed due to " + ex);
-                }
-
-            } else {
-                output.put("info", "Sorry this Servlet only handles file upload request");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return output;
-    }
-    
     public ArrayList<Student> getStudents() throws SQLException {
         ArrayList<Student> list = null;
         list = hodModel.getAllStudent();
         return ((list != null) && (list.size() != 0)) ? list : null;
     }
 
+    /**
+     * Get All Students (With filters)
+     * @param filters
+     * @param values
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Student> getStudents(String[] filters, String[] values) throws SQLException {
         ArrayList<Student> list = null;
 
@@ -228,19 +297,49 @@ public class HodCapability extends CommonCapability {
         return ((list != null) && (list.size() != 0)) ? list : null;
     }
 
+    /**
+     * Set Student Marks
+     * @param roll
+     * @param subjectCode
+     * @param marks
+     * @param year
+     * @return
+     * @throws SQLException
+     */
     public boolean setStudnetMarks(String roll, String subjectCode, String marks, String year) throws SQLException {
         return hodModel.setStudentMarks(roll, subjectCode, marks, year);
     }
 
+    /**
+     * Set Student Semester
+     * @param roll
+     * @param sem
+     * @return
+     * @throws SQLException
+     */
     public boolean setStudentSemester(String roll, String sem) throws SQLException {
         return hodModel.setStudentSemester(roll, sem);
     }
 
+    /**
+     * Promote Student To the next Semester 
+     * @param roll
+     * @return
+     * @throws SQLException
+     */
     public boolean promoteStudentSemester(String roll) throws SQLException {
         return hodModel.promoteStudentSemester(roll);
     }
 
-    public Map<String, Object> getStudnetMarks(String roll, String filters_post_data, String values_post_data, String orderBy) throws SQLException {
+    /**
+     * Returns Student Marks
+     * @param filters_post_data
+     * @param values_post_data
+     * @param orderBy
+     * @return
+     * @throws SQLException
+     */
+    public Map<String, Object> getStudnetMarks(String filters_post_data, String values_post_data, String orderBy) throws SQLException {
 
         Map<String, Object> data = new HashMap<>();
         if (!filters_post_data.equals("")) {
@@ -250,6 +349,7 @@ public class HodCapability extends CommonCapability {
             validFilters.add("roll");
             validFilters.add("year");
             validFilters.add("passing_year");
+            validFilters.add("sem");
 
             String[] filters = filters_post_data.split("\\|", -1);
             String[] values = values_post_data.split("\\|", -1);
@@ -267,7 +367,7 @@ public class HodCapability extends CommonCapability {
                 return data;
             }
 
-            data = hodModel.getStudentMarks(roll, filters, values, orderBy);
+            data = hodModel.getStudentMarks(filters, values, orderBy);
             if (data == null) {
                 data = new HashMap<String, Object>();
                 data.put("error", "true");
@@ -276,19 +376,28 @@ public class HodCapability extends CommonCapability {
 
             return data;
         } else {
-            return hodModel.getStudentMarks(roll, new String[]{}, new String[]{}, "");
+            return hodModel.getStudentMarks(new String[]{}, new String[]{}, "");
         }
     }
 
-    /*
-    public Map<String, Object> getRunnerups(String year) throws SQLException {
-        return hodModel.getRunnerups(year);
-    }*/
+
+    /**
+     * Returns All Subjects
+     * @return
+     * @throws SQLException
+     */
 
     public Map<String, Object> getSubjects() throws SQLException {
         return hodModel.getSubjects();
     }
 
+    /**
+     * Assign Faculty To Subject
+     * @param email
+     * @param subjectCode
+     * @return
+     * @throws SQLException
+     */
     public boolean assignFacultyToSubject(String email, String subjectCode) throws SQLException {
 
         String uType = loggedInFacultyType();
@@ -302,6 +411,13 @@ public class HodCapability extends CommonCapability {
         return false;
     }
 
+    /**
+     * Unassign Faculty To Subject
+     * @param email
+     * @param subjectCode
+     * @return
+     * @throws SQLException
+     */
     public boolean unassignFacultyToSubject(String email, String subjectCode) throws SQLException {
         String uType = loggedInFacultyType();
         if (uType.equals("1") || uType.equals("2")) {
@@ -314,4 +430,3 @@ public class HodCapability extends CommonCapability {
         return false;
     }
 }
-

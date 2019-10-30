@@ -22,8 +22,15 @@ import java.util.Map;
  */
 public class CommonCapability extends Controller {
 
+    /**
+     *
+     */
     public Model model;
 
+    /**
+     * Compiles Student Post Data
+     * @return
+     */
     protected Student compileStudentPostData() {
 
         Student student = new Student();
@@ -105,6 +112,12 @@ public class CommonCapability extends Controller {
         return student;
     }
 
+    /**
+     * Compiles Student Excel Data
+     * @param sData
+     * @param positionMap
+     * @return
+     */
     protected Student compileStudentExcelData(ArrayList<String> sData, Map<String, Integer> positionMap) {
 
         Student student = new Student();
@@ -188,6 +201,10 @@ public class CommonCapability extends Controller {
         return student;
     }
 
+    /**
+     * Compiles Faculty Post Data
+     * @return
+     */
     protected Faculty compileFacultyPostData() {
         String username = gPost("username");
         String email = gPost("email");
@@ -211,6 +228,4 @@ public class CommonCapability extends Controller {
         return faculty;
     }
     
-
-
 }

@@ -11,7 +11,10 @@ import com.sha.ExcelHandler;
 import static com.sha.ExcelHandler.getDataPositionMapping;
 import static com.sha.ExcelHandler.readExcel;
 import com.tmsl.capability.AdminCapability;
+import com.tmsl.capability.CoordinatorCapability;
 import com.tmsl.capability.HodCapability;
+import com.tmsl.capability.StudentCapability;
+import com.tmsl.capability.TeacherCapability;
 import com.tmsl.model.AuthModel;
 import com.tmsl.pojo.Faculty;
 import com.tmsl.pojo.Student;
@@ -20,8 +23,12 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -88,15 +95,19 @@ public class Api extends Controller {
                         output = admin(requestApi);
                         break;
                     case "2": // Hod
+                        output = hod(requestApi);
                         break;
                     case "3": // Coordinator
+                        output = coordinator(requestApi);
                         break;
                     case "4": // Teacher
+                        output = teacher(requestApi);
                         break;
                     case "5": // Student
+                        output = student(requestApi);
                         break;
                     default:
-                        output = new AbstractMap.SimpleEntry<String, String>("status", "invalid user level");
+                        output = new AbstractMap.SimpleEntry<>("status", "invalid user level");
                 }
             } else {
                 Map data = new HashMap<String, String>();
@@ -367,7 +378,7 @@ public class Api extends Controller {
                 break;
             case "/student/submit/xml":
                 try {
-                    String TEMP_FILE_DIR = "D:\\";
+                    String TEMP_FILE_DIR = Controller.USER_UPLOAD_DIR + ":\\project_5th_sem";
                     String TEMP_FILE_NAME = "px2.xls";
                     Map<String, Object> output_ = capability.uploadStudentFile(TEMP_FILE_DIR, TEMP_FILE_NAME);
 
@@ -469,15 +480,16 @@ public class Api extends Controller {
                 break;
             case "/student/get/marks":
                 try {
-                    String roll = gPost("roll");
-                    String marks = gPost("marks");
-                    String year = gPost("year");
-                    String subjectCode = gPost("subject_code");
+                    //String roll = gPost("roll");
+                    //String marks = gPost("marks");
+                    //String year = gPost("year");
+                    //String subjectCode = gPost("subject_code");
                     String filters = gPost("filters");
                     String values = gPost("values");
-                    Map<String, Object> result = capability.getStudnetMarks(roll, filters, values, "");
+                    Map<String, Object> result = capability.getStudnetMarks(filters, values, "");
                     if (!result.containsKey("error")) {
-                        output.put("student_marks", result);
+                        output.put("found", result.get("found"));
+                        output.put("student_marks", result.get("student_marks"));
                         output.put("status", "success");
                     } else {
                         output.put("status", "failed");
@@ -559,12 +571,38 @@ public class Api extends Controller {
                     ex.printStackTrace();
                 }
                 break;
+            case "/notice/submit":
+                try {
+                    if (gPost("content").equals("")) {
+                        output.put("status", "failed");
+                        output.put("notice", "please provide notice content");
+                    } else if (capability.submitNotice()) {
+                        output.put("status", "success");
+                        output.put("notice", "submitted");
+                    } else {
+                        output.put("status", "failed");
+                        output.put("notice", "user is not authorized to post notice");
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+            case "/notice/get":
+                try {
+                    output.put("status", "success");
+                    output.put("notices", capability.getNotice());
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
         }
 
         try {
             System.out.println("Trying to Close Connection...");
             capability.closeConnection();
-            System.out.println("Connection Closed");
+            //System.out.println("Connection Closed");
         } catch (SQLException ex) {
             System.out.println("Error closing connection");
         }
@@ -636,7 +674,6 @@ public class Api extends Controller {
                 try {
                     String email = gPost("email");
                     String subjectCode = gPost("subject_code").toUpperCase();
-
                     if (email.equals("") || subjectCode.equals("")) {
                         output.put("status", "failed");
                         output.put("info", "please provide email and subject code");
@@ -765,9 +802,10 @@ public class Api extends Controller {
                     String subjectCode = gPost("subject_code");
                     String filters = gPost("filters");
                     String values = gPost("values");
-                    Map<String, Object> result = capability.getStudnetMarks(roll, filters, values, "");
+                    Map<String, Object> result = capability.getStudnetMarks(filters, values, "");
                     if (!result.containsKey("error")) {
-                        output.put("student_marks", result);
+                        output.put("found", result.get("found"));
+                        output.put("student_marks", result.get("student_marks"));
                         output.put("status", "success");
                     } else {
                         output.put("status", "failed");
@@ -838,12 +876,38 @@ public class Api extends Controller {
                     ex.printStackTrace();
                 }
                 break;
+            case "/notice/submit":
+                try {
+                    if (gPost("content").equals("")) {
+                        output.put("status", "failed");
+                        output.put("notice", "please provide notice content");
+                    } else if (capability.submitNotice()) {
+                        output.put("status", "success");
+                        output.put("notice", "submitted");
+                    } else {
+                        output.put("status", "failed");
+                        output.put("notice", "user is not authorized to post notice");
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+            case "/notice/get":
+                try {
+                    output.put("status", "success");
+                    output.put("notices", capability.getNotice());
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
         }
 
         try {
             System.out.println("Trying to Close Connection...");
             capability.closeConnection();
-            System.out.println("Connection Closed");
+            //System.out.println("Connection Closed");
         } catch (SQLException ex) {
             System.out.println("Error closing connection");
         }
@@ -851,12 +915,7 @@ public class Api extends Controller {
     }
 
     private Map<String, Object> coordinator(String requestApi) {
-        Map<String, Object> output = new HashMap<String, Object>();
-        return output;
-    }
-
-    private Map<String, Object> teacher(String requestApi) {
-        HodCapability capability = new HodCapability();
+        CoordinatorCapability capability = new CoordinatorCapability();
         Map<String, Object> output = new HashMap<String, Object>();
         output.put("status", "invalid api path");
         // System.out.println(requestApi);
@@ -936,9 +995,10 @@ public class Api extends Controller {
                     String subjectCode = gPost("subject_code");
                     String filters = gPost("filters");
                     String values = gPost("values");
-                    Map<String, Object> result = capability.getStudnetMarks(roll, filters, values, "");
+                    Map<String, Object> result = capability.getStudnetMarks(filters, values, "");
                     if (!result.containsKey("error")) {
-                        output.put("student_marks", result);
+                        output.put("found", result.get("found"));
+                        output.put("student_marks", result.get("student_marks"));
                         output.put("status", "success");
                     } else {
                         output.put("status", "failed");
@@ -968,30 +1028,159 @@ public class Api extends Controller {
                     ex.printStackTrace();
                 }
                 break;
-            case "/student/submit/semester":
+            case "/subjects":
                 try {
-                    String roll = gPost("roll");
-                    String sem = gPost("semester");
-
-                    if (capability.setStudentSemester(roll, sem)) {
+                    output.put("status", "success");
+                    output.put("subjects", capability.getSubjects());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+            case "/notice/submit":
+                try {
+                    if (gPost("content").equals("")) {
+                        output.put("status", "failed");
+                        output.put("notice", "please provide notice content");
+                    } else if (capability.submitNotice()) {
                         output.put("status", "success");
-                        output.put("info", "semester updated");
+                        output.put("notice", "submitted");
                     } else {
                         output.put("status", "failed");
-                        output.put("info", "something went wrong");
+                        output.put("notice", "user is not authorized to post notice");
                     }
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
                 break;
-            case "/student/promote":
+            case "/notice/get":
+                try {
+                    output.put("status", "success");
+                    output.put("notices", capability.getNotice());
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+        }
+
+        try {
+            System.out.println("Trying to Close Connection...");
+            capability.closeConnection();
+            //System.out.println("Connection Closed");
+        } catch (SQLException ex) {
+            System.out.println("Error closing connection");
+        }
+
+        return output;
+    }
+
+    private Map<String, Object> teacher(String requestApi) {
+        TeacherCapability capability = new TeacherCapability();
+        Map<String, Object> output = new HashMap<String, Object>();
+        output.put("status", "invalid api path");
+        // System.out.println(requestApi);
+        switch (requestApi) {
+            case "/student/get":
+                try {
+                    String filter = gPost("filters");
+                    String filterValue = gPost("values");
+
+                    String filters[] = null;
+                    String values[] = null;
+                    boolean hasFilterRequest = false;
+                    boolean validFilterStucture = true;
+                    boolean invalidFilter = false;
+                    ArrayList<Student> studentList = null;
+
+                    if (!filter.equals("") && !filterValue.equals("")) {
+                        filters = filter.split("\\|", -1);
+                        values = filterValue.split("\\|", -1);
+                        ArrayList<String> validFilters = new ArrayList<String>();
+                        validFilters.add("email");              // Filters by email id
+                        validFilters.add("mobile");             // Filters by mobile
+                        validFilters.add("fname");              // Filters by first name
+                        validFilters.add("mname");              // Filters by middle name
+                        validFilters.add("lname");              // Filters by last name
+                        validFilters.add("roll");               // Filters by university roll number
+                        validFilters.add("reg");                // Filters by university registration number
+                        validFilters.add("passing_year");       // Filters by year of passing
+                        validFilters.add("sem");                // Filters by students current semester number
+
+                        for (String f : filters) {
+                            if (!validFilters.contains(f)) {
+                                invalidFilter = true;
+                                break;
+                            }
+                        }
+
+                        if (!invalidFilter) {
+                            if (filters.length == 0 || values.length == 0) {
+                                output.put("status", "failed");
+                                output.put("info", "filters/values or both parameters are empty");
+                            } else if (filters.length != values.length) {
+                                validFilterStucture = false;
+                                output.put("status", "failed");
+                                output.put("info", "unequal number of filters and values");
+                            } else {
+                                //do stuff here
+                                studentList = capability.getStudents(filters, values);
+                                output.put("status", "success");
+                                output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                                output.put("students", studentList);
+                            }
+                        } else {
+                            output.put("status", "failed");
+                            output.put("info", "one or more invalid filters found");
+                        }
+
+                    } else {
+                        //studentList = capability.getStudents(filters, values);
+                        studentList = capability.getStudents();
+
+                        output.put("status", "success");
+                        output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                        output.put("students", studentList);
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println(ex);
+                }
+                break;
+            case "/student/get/marks":
                 try {
                     String roll = gPost("roll");
-
-                    if (capability.promoteStudentSemester(roll)) {
+                    String marks = gPost("marks");
+                    String year = gPost("year");
+                    String subjectCode = gPost("subject_code");
+                    String filters = gPost("filters");
+                    String values = gPost("values");
+                    Map<String, Object> result = capability.getStudnetMarks(filters, values, "");
+                    if (!result.containsKey("error")) {
+                        output.put("found", result.get("found"));
+                        output.put("student_marks", result.get("student_marks"));
                         output.put("status", "success");
-                        output.put("info", "Student Promoted");
+                    } else {
+                        output.put("status", "failed");
+                        output.put("info", result);
+                    }
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                break;
+
+            case "/student/submit/marks":
+                try {
+                    String roll = gPost("roll");
+                    String marks = gPost("marks");
+                    String year = gPost("year");
+                    String subjectCode = gPost("subject_code");
+
+                    if (capability.setStudnetMarks(roll, subjectCode, marks, year)) {
+                        output.put("status", "success");
+                        output.put("info", "marks updated");
                     } else {
                         output.put("status", "failed");
                         output.put("info", "something went wrong");
@@ -1009,12 +1198,21 @@ public class Api extends Controller {
                     ex.printStackTrace();
                 }
                 break;
+            case "/notice/get":
+                try {
+                    output.put("status", "success");
+                    output.put("notices", capability.getNotice());
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
         }
 
         try {
             System.out.println("Trying to Close Connection...");
             capability.closeConnection();
-            System.out.println("Connection Closed");
+            //System.out.println("Connection Closed");
         } catch (SQLException ex) {
             System.out.println("Error closing connection");
         }
@@ -1023,7 +1221,118 @@ public class Api extends Controller {
     }
 
     private Map<String, Object> student(String requestApi) {
+        StudentCapability capability = new StudentCapability();
         Map<String, Object> output = new HashMap<String, Object>();
+        output.put("status", "invalid api path");
+        switch (requestApi) {
+            case "/get/mydetails":
+                try {
+                    HttpSession session = request.getSession();
+
+                    String filters[] = new String[]{"roll"};
+                    String values[] = new String[]{session.getAttribute("roll").toString().trim()};
+                    boolean hasFilterRequest = false;
+                    boolean validFilterStucture = true;
+                    boolean invalidFilter = false;
+                    ArrayList<Student> studentList = null;
+
+                    if (filters.length == 0 || values.length == 0) {
+                        output.put("status", "failed");
+                        output.put("info", "filters/values or both parameters are empty");
+                    } else if (filters.length != values.length) {
+                        validFilterStucture = false;
+                        output.put("status", "failed");
+                        output.put("info", "unequal number of filters and values");
+                    } else {
+                        //do stuff here 
+                        studentList = capability.getStudents(filters, values);
+                        output.put("status", "success");
+                        output.put("student_count", (studentList == null) ? 0 : studentList.size());
+                        output.put("students", studentList);
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println(ex);
+                }
+                break;
+
+            case "/update":
+                try {
+                    String filter = gPost("fields");
+                    String filterValue = gPost("values");
+
+                    String filters[] = null;
+                    String values[] = null;
+                    boolean hasFilterRequest = false;
+                    boolean validFilterStucture = true;
+                    boolean invalidFilter = false;
+                    ArrayList<Student> studentList = null;
+
+                    if (!filter.equals("") && !filterValue.equals("")) {
+                        filters = filter.split("\\|", -1);
+                        values = filterValue.split("\\|", -1);
+                        String[] s = new String[]{"mobile_number", "email", "dob", "10_th_exam_name", "10_th_passing_year", "10_th_board", "10_th_school_name", "10_th_language_medium", "10_th_standard_marks", "10_th_actual_marks", "12_th_exam_name", "12_th_passing_year", "12_th_board", "12_th_school_name", "12_th_language_medium", "12_th_standard_marks", "12_th_actual_marks", "diploma_university", "diploma_stream", "diploma_passing_year", "diploma_marks", "graduation_university", "graduation_stream", "graduation_passing_year", "graduation_marks", "fathers_name", "fathers_occupation", "mothers_name", "mothers_occupation", "gurdains_name", "gurdains_occupation", "gurdains_relation", "present_address", "permanent_address", "present_state", "permanent_state", "present_city", "permanent_city", "present_district", "permanent_district", "present_pin_number", "permanent_pin_number", "present_post_office", "permanent_post_office", "physical_disability", "academic_year_gap", "session_of_year_gap", "reason_of_year_gap", "blood_group", "10_th_math_percentage", "12_th_math_percentage"};
+
+                        List<String> validFilters = Arrays.asList(s);
+                        String noF = "";
+                        for (String f : filters) {
+                            if (!validFilters.contains(f)) {
+                                invalidFilter = true;
+                                noF = f;
+                                break;
+                            }
+                        }
+
+                        if (!invalidFilter) {
+                            if (filters.length != values.length) {
+                                output.put("status", "failed");
+                                output.put("info", "unequal number of filters and values");
+                            } else {
+                                HttpSession session = request.getSession();
+                                int cnt = capability.update(filters, values, session.getAttribute("roll").toString().trim());
+                                output.put("status", "success");
+                                output.put("updated_field", cnt);
+                            }
+
+                        } else {
+                            output.put("status", "failed");
+                            output.put("info", "\"" + noF + "\" is not an updatable field");
+                        }
+                    } else {
+                        output.put("status", "failed");
+                        output.put("info", "please provide update fields");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println(ex);
+                }
+                break;
+            case "/notice/get":
+                try {
+                    output.put("status", "success");
+                    output.put("notices", capability.getNotice());
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+            case "/image/upload":
+                try {
+                    Map<String, Object> data = capability.studentImageUpload();
+                    if(data.containsKey("status")){
+                        output.put("status", data.get("status"));
+                    }
+                    if(data.containsKey("info")){
+                        output.put("info", data.get("info"));
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+        }
         return output;
     }
+
 }

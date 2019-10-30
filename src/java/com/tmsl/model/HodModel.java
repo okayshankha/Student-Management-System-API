@@ -48,6 +48,12 @@ public class HodModel extends Model {
         return all_faculties;
     }
 
+    /**
+     * Adds New Faculty
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public boolean addFaculty(Faculty faculty) throws SQLException {
         Map<String, String> data = new HashMap<String, String>();
 
@@ -80,6 +86,12 @@ public class HodModel extends Model {
         }
     }
 
+    /**
+     * Deletes Faculty
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public boolean deleteFaculty(Faculty faculty) throws SQLException {
         db.selectTable("faculty_master");
         db.where("email", faculty.getEmail().trim());
@@ -103,6 +115,12 @@ public class HodModel extends Model {
 
     }
 
+    /**
+     * Find Faculty by semi-complete faculty object
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public String existsFaculty(Faculty faculty) throws SQLException {
         int cnt = 0;
         if (faculty.getEmail().trim().equals("")) {
@@ -156,6 +174,14 @@ public class HodModel extends Model {
         return null;
     }
 
+    /**
+     * Get All Faculty By Type
+     * @param type
+     * @param filterType
+     * @param filterValue
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Faculty> getAllFacultyByType(String type, String filterType, String filterValue) throws SQLException {
         ArrayList<Faculty> all_faculties = new ArrayList<Faculty>();
 
@@ -206,6 +232,12 @@ public class HodModel extends Model {
         return all_faculties;
     }
 
+    /**
+     * Get All Faculty By Type
+     * @param type
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Faculty> getAllFacultyByType(String type) throws SQLException {
         ArrayList<Faculty> all_faculties = new ArrayList<Faculty>();
 
@@ -246,6 +278,12 @@ public class HodModel extends Model {
         return all_faculties;
     }
 
+    /**
+     * Get Faculty By Mobile
+     * @param mob
+     * @return
+     * @throws SQLException
+     */
     public Faculty getFacultyByMobile(String mob) throws SQLException {
         Faculty faculty = null;
 
@@ -275,6 +313,12 @@ public class HodModel extends Model {
         return faculty;
     }
 
+    /**
+     * Get Faculty By Email
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public Faculty getFacultyByEmail(String email) throws SQLException {
         Faculty faculty = null;
 
@@ -302,16 +346,20 @@ public class HodModel extends Model {
         return faculty;
     }
     
+    @Override
     public boolean assignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
         return super.assignFacultyToSubject(facultyID, subjectID);
     }
 
+    @Override
     public boolean unassignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
         return super.unassignFacultyToSubject(facultyID, subjectID);
     }
 
     /**
-     Student Section 
+     * Get All Student
+     * @return 
+     * @throws java.sql.SQLException 
      */
     public ArrayList<Student> getAllStudent() throws SQLException {
         db.selectTable("student_master");
@@ -321,6 +369,13 @@ public class HodModel extends Model {
         return list;
     }
 
+    /**
+     * Get All Student With Filters
+     * @param filters
+     * @param values
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<Student> getAllStudent(String[] filters, String[] values) throws SQLException {
         db.selectTable("student_master");
         db.select(new String[]{"*"});
@@ -365,7 +420,7 @@ public class HodModel extends Model {
     }
 
     /**
-     *
+     * Get Student Semester
      * @param roll
      * @return
      * @throws SQLException Returns Student semester number. Returns -1 if
@@ -389,6 +444,15 @@ public class HodModel extends Model {
         return semNum;
     }
 
+    /**
+     * Set Student Marks
+     * @param roll
+     * @param subjectCode
+     * @param marks
+     * @param year
+     * @return
+     * @throws SQLException
+     */
     public boolean setStudentMarks(String roll, String subjectCode, String marks, String year) throws SQLException {
         subjectCode = subjectCode.toUpperCase();
         if (!getStudentSemester(roll).equals(getSubjectSemester(subjectCode))) {
@@ -429,7 +493,7 @@ public class HodModel extends Model {
     }
 
     /**
-     *
+     * Set Student Semester
      * @param roll
      * @param sem
      * @return
@@ -469,7 +533,8 @@ public class HodModel extends Model {
                     db.access();
                     return true;
                 }
-            }*/
+            }
+            */
             return false;
 
         } else {
@@ -487,6 +552,12 @@ public class HodModel extends Model {
 
     }
 
+    /**
+     * Promote Student Semester
+     * @param roll
+     * @return
+     * @throws SQLException
+     */
     public boolean promoteStudentSemester(String roll) throws SQLException {
         String _sem = getStudentSemester(roll);
         Integer nextSem = Integer.parseInt(_sem) + 1;
@@ -500,24 +571,22 @@ public class HodModel extends Model {
     }
 
     /**
-     *
-     * @param roll
-     * @param subjectCode
-     * @param marks
-     * @param year
+     * Get Student Marks
+     * @param filters
+     * @param values
+     * @param orderBy
      * @return
-     * @throws SQLException Inserts new Student Marks and also update an
-     * existing marks
+     * @throws SQLException
      */
-    public Map<String, Object> getStudentMarks(String roll, String[] filters, String[] values, String orderBy) throws SQLException {
+    public Map<String, Object> getStudentMarks(String[] filters, String[] values, String orderBy) throws SQLException {
         Map<String, Object> data = new HashMap<>();
-        data.put("found", 0);
         int cnt = 0;
 
         db.joinTables(new String[]{"student_master", "student_marks_map", "subject_semester_map"});
-        db.select(new String[]{"A.first_name", "A.middle_name", "A.last_name", "B.mca_university_roll_no", "B.marks", "C.subject_name", "C.subject_code"});
+        db.select(new String[]{"A.first_name", "A.middle_name", "A.last_name", "B.mca_university_roll_no", "B.marks", "B.year", "C.subject_name", "C.subject_code"});
         db.where("A.mca_university_roll_no", "B.mca_university_roll_no");
         db.where("B.subject_id", "C.id");
+        db.orderBy(new String[]{"B.year"});
 
         for (int i = 0; i < filters.length; i++) {
             switch (filters[i]) {
@@ -540,12 +609,13 @@ public class HodModel extends Model {
             }
         }
 
-        System.out.println(db.getQueryString());
+        //System.out.println(db.getQueryString());
 
         ResultSet rs = db.access();
 
         while (rs.next()) {
-            data.put("found", ++cnt);
+            ++cnt;
+            //data.put("found", ++cnt);
             String sRoll = rs.getString("mca_university_roll_no");
             if (data.containsKey(sRoll)) {
 
@@ -557,6 +627,7 @@ public class HodModel extends Model {
                 _dataMarks.put("subject_name", rs.getString("subject_name"));
                 _dataMarks.put("subject_code", rs.getString("subject_code"));
                 _dataMarks.put("marks", rs.getString("marks"));
+                _dataMarks.put("year", rs.getString("year"));
 
                 list.add(_dataMarks);
 
@@ -569,12 +640,14 @@ public class HodModel extends Model {
                 _data.put("first_name", rs.getString("first_name"));
                 _data.put("middle_name", rs.getString("middle_name"));
                 _data.put("last_name", rs.getString("last_name"));
+                
 
                 Map<String, String> _dataMarks = new HashMap<>();
 
                 _dataMarks.put("subject_name", rs.getString("subject_name"));
                 _dataMarks.put("subject_code", rs.getString("subject_code"));
                 _dataMarks.put("marks", rs.getString("marks"));
+                _dataMarks.put("year", rs.getString("year"));
 
                 ArrayList<Map<String, String>> list = new ArrayList<Map<String, String>>();
                 list.add(_dataMarks);
@@ -585,9 +658,17 @@ public class HodModel extends Model {
 
             }
         }
-        return (data.size() != 0) ? data : null;
+        Map<String, Object> d2 = new HashMap<>();
+        d2.put("student_marks", data);
+        d2.put("found", cnt);
+        return (d2.size() != 0) ? d2 : null;
     }
 
+    /**
+     * Get Subjects
+     * @return
+     * @throws SQLException
+     */
     public Map<String, Object> getSubjects() throws SQLException {
         db.selectTable("subject_semester_map");
         db.select(new String[]{"*"});

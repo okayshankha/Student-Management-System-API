@@ -18,6 +18,12 @@ import java.sql.SQLException;
  */
 public class AuthModel extends Model {
 
+    /**
+     * Validate Student by Semi-Complete Student Object
+     * @param student
+     * @return
+     * @throws SQLException
+     */
     public Student validateStudent(Student student) throws SQLException {
         Student output_student = new Student();
         db.joinTables(new String[]{"student_master","student_password_map"});
@@ -41,6 +47,12 @@ public class AuthModel extends Model {
         return output_student;
     }
 
+    /**
+     * Validate faculty by Semi-Complete faculty Object
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public Faculty validateFaculty(Faculty faculty) throws SQLException {
         Faculty output_faculty = new Faculty();
 

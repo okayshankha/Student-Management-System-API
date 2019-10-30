@@ -5,11 +5,14 @@
  */
 package com.tmsl.capability;
 
+import com.tmsl.model.CoordinatorModel;
 import com.tmsl.model.TeacherModel;
 import com.tmsl.pojo.Student;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
 
@@ -17,16 +20,37 @@ import javax.servlet.http.HttpSession;
  *
  * @author Shankha
  */
-public class TeacherCapability extends CommonCapability {
+public class CoordinatorCapability extends CommonCapability {
 
-    TeacherModel teacherModel = new TeacherModel();
+    CoordinatorModel coordinatorModel = new CoordinatorModel();
 
     /**
      * Ends MySQL connection
      * @throws SQLException
      */
     public void closeConnection() throws SQLException {
-        teacherModel.closeConnection();
+        coordinatorModel.closeConnection();
+    }
+
+    /**
+     * Submits New Notice
+     * @return
+     * @throws SQLException
+     */
+    public boolean submitNotice() throws SQLException {
+        String content = gPost("content");
+        HttpSession session = request.getSession();
+        String faculty_type = session.getAttribute("faculty_type").toString();
+
+        if (faculty_type.equals("1") || faculty_type.equals("2") || faculty_type.equals("3")) {
+            String faculty_id = coordinatorModel.getFacultyID(session.getAttribute("email").toString());
+
+            coordinatorModel.postNotice(faculty_id, content);
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -35,11 +59,11 @@ public class TeacherCapability extends CommonCapability {
      * @throws SQLException
      */
     public Map<String, Object> getNotice() throws SQLException {
-        String faculty_id = teacherModel.getFacultyID(gPost("email"));
+        String faculty_id = coordinatorModel.getFacultyID(gPost("email"));
         if (faculty_id == null) {
             faculty_id = "";
         }
-        return teacherModel.getNotice(faculty_id);
+        return coordinatorModel.getNotice(faculty_id);
     }
 
     /**
@@ -48,9 +72,8 @@ public class TeacherCapability extends CommonCapability {
      * @throws SQLException
      */
     public ArrayList<Student> getStudents() throws SQLException {
-        ArrayList<Student> list = null;
-        list = teacherModel.getAllStudent();
-        return ((list != null) && (list.size() != 0)) ? list : null;
+        ArrayList<Student> list = coordinatorModel.getAllStudent();
+        return ((list != null) && (!list.isEmpty())) ? list : null;
     }
 
     /**
@@ -63,7 +86,7 @@ public class TeacherCapability extends CommonCapability {
     public ArrayList<Student> getStudents(String[] filters, String[] values) throws SQLException {
         ArrayList<Student> list = null;
 
-        list = teacherModel.getAllStudent(filters, values);
+        list = coordinatorModel.getAllStudent(filters, values);
 
         return ((list != null) && (list.size() != 0)) ? list : null;
     }
@@ -78,7 +101,7 @@ public class TeacherCapability extends CommonCapability {
      * @throws SQLException
      */
     public boolean setStudnetMarks(String roll, String subjectCode, String marks, String year) throws SQLException {
-        return teacherModel.setStudentMarks(roll, subjectCode, marks, year);
+        return coordinatorModel.setStudentMarks(roll, subjectCode, marks, year);
     }
 
 
@@ -119,7 +142,7 @@ public class TeacherCapability extends CommonCapability {
                 data.put("filter", "filter count and value count are not same");
                 return data;
             }
-            data = teacherModel.getStudentMarks(filters, values, orderBy, facultyEmail);
+            data = coordinatorModel.getStudentMarks(filters, values, orderBy, facultyEmail);
             if (data == null) {
                 data = new HashMap<String, Object>();
                 data.put("error", "true");
@@ -128,13 +151,13 @@ public class TeacherCapability extends CommonCapability {
 
             return data;
         } else {
-            return teacherModel.getStudentMarks(new String[]{}, new String[]{}, "", facultyEmail);
+            return coordinatorModel.getStudentMarks(new String[]{}, new String[]{}, "", facultyEmail);
         }
     }
 
     /*
     public Map<String, Object> getRunnerups(String year) throws SQLException {
-        return teacherModel.getRunnerups(year);
+        return coordinatorModel.getRunnerups(year);
     }*/
 
     /**
@@ -144,7 +167,7 @@ public class TeacherCapability extends CommonCapability {
      */
 
     public Map<String, Object> getSubjects() throws SQLException {
-        return teacherModel.getSubjects();
+        return coordinatorModel.getSubjects();
     }
 
 }

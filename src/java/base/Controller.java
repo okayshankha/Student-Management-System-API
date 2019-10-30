@@ -7,15 +7,9 @@ package base;
 
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,18 +25,49 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "Controller", urlPatterns = {"/s"})
 public class Controller extends HttpServlet {
 
-    protected Class model;
+    /**
+     *  User specified file location for file and image storage.
+     */
+    public static String USER_UPLOAD_DIR = "D";
+
+    /**
+     *  Static HttpServletRequest object for extended use.
+     */
     protected static HttpServletRequest request;
+
+    /**
+     *  Default view (Not Applicable)
+     */
     protected String defaultView = "index.jsp";
+
+    /**
+     *  Error view (Not Applicable)
+     */
     protected String errorView = "error/404.jsp";
 
+    /**
+     *
+     * View render function
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     protected void render(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RequestDispatcher rd = request.getRequestDispatcher("/" + errorView);
         rd.forward(request, response);
     }
 
+    /**
+     * View render function
+     * @param request
+     * @param response
+     * @param view
+     * @throws ServletException
+     * @throws IOException
+     */
     protected void render(HttpServletRequest request, HttpServletResponse response, String view) throws ServletException, IOException {
-        if ((view == null) || (view.trim() == "")) {
+        if ((view == null) || (view.trim().equals(""))) {
             render(request, response);
             return;
         }
@@ -50,14 +75,11 @@ public class Controller extends HttpServlet {
         rd.forward(request, response);
     }
 
-    public boolean isLoggedIn(HttpServletRequest request) {
-        HttpSession session = request.getSession(true);
-        if (session.getAttribute("login_status") == "true") {
-            return true;
-        }
-        return false;
-    }
 
+    /**
+     * Login checker.
+     * @return
+     */
     public boolean isLoggedIn() {
         HttpSession session = Controller.request.getSession(true);
         if (session.getAttribute("login_status") == "true") {
@@ -66,6 +88,10 @@ public class Controller extends HttpServlet {
         return false;
     }
 
+    /**
+     * Find the logged in Faculty Type (Admin/HOD/Coordinator/Teacher/Student)
+     * @return
+     */
     public String loggedInFacultyType() {
         if (!isLoggedIn()) {
             return null;
@@ -75,10 +101,19 @@ public class Controller extends HttpServlet {
         return (String) session.getAttribute("faculty_type");
     }
 
+    /**
+     * Returns the API context path.
+     * @return
+     */
     protected String getRequstApi() {
         return Controller.request.getRequestURI().replace(Controller.request.getContextPath() + "/api", "");
     }
 
+    /**
+     * Convert object to JSON (using Gson API)
+     * @param obj
+     * @return
+     */
     public String jsonOut(Object obj) {
         Map<String, Object> output = new HashMap<>();
         output.put("response", obj);
@@ -145,6 +180,11 @@ public class Controller extends HttpServlet {
         return "Default Controller";
     }
 
+    /**
+     * Finds the HTTP <code>POST</code> parameters.
+     * @param name
+     * @return
+     */
     public String gPost(String name) {
         String s = "";
         if (request.getMethod().equals("POST")) {
@@ -162,6 +202,11 @@ public class Controller extends HttpServlet {
         return s;
     }
 
+    /**
+     * Finds the HTTP <code>GET</code> parameters.
+     * @param name
+     * @return
+     */
     public String gGet(String name) {
         String s = "";
         if (request.getMethod().equals("GET")) {

@@ -12,6 +12,7 @@ import com.tmsl.pojo.Student;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -23,11 +24,15 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class Model {
 
+    /**
+     *  Database object variable.
+     */
     protected DB db;
-    private static DB static_db;
 
-    protected HttpServletRequest request;
 
+    /**
+     * Default Constructor
+     */
     public Model() {
         Database.config("localhost", "shankha", "root", "project_database");
         db = new DB(true);
@@ -37,10 +42,77 @@ public class Model {
         //Model.static_db = new DB(true);
     }
 
+    /**
+     * Ends MySQL connection
+     * @throws SQLException
+     */
     public void closeConnection() throws SQLException {
         db.close();
     }
 
+    /**
+     * Enables to post a new notice
+     * @param faculty_id
+     * @param content
+     * @throws SQLException
+     */
+    public void postNotice(String faculty_id, String content) throws SQLException {
+        Map<String, String> data = new HashMap<>();
+        data.put("content", content);
+        
+        Date date=java.util.Calendar.getInstance().getTime(); 
+        data.put("date", date.toString());
+        
+        data.put("faculty_id", faculty_id);
+        db.insert("notice", data);
+        db.access();
+    }
+
+    /**
+     * Enables to post a new notice (Optionally filtered by faculty email id)
+     * @param faculty_id
+     * @return
+     * @throws SQLException
+     */
+    public Map<String, Object> getNotice(String faculty_id) throws SQLException {
+        db.joinTables(new String[]{"faculty_master", "notice"});
+        db.select(new String[]{"B.faculty_id", "A.first_name", "A.middle_name", "A.last_name", "B.content", "B.date"});
+        db.where("A.id", "B.faculty_id");
+        if(!faculty_id.equals("")){
+            db.where("B.faculty_id", faculty_id);
+        }
+        ResultSet rs = db.access();
+        Map<String, Object> output = new HashMap<>();
+        
+        while(rs.next()){
+            String _faculty_id = rs.getString("faculty_id");
+            if(output.containsKey(_faculty_id)){
+                Map<String, Object> _temp = (Map<String, Object>)output.get(_faculty_id);
+                Map<String, String> notices = (Map<String, String>)_temp.get("notices");
+                notices.put(rs.getString("date"), rs.getString("content"));
+                _temp.put("notices", notices);
+                
+                output.put(_faculty_id, _temp);
+            }else{
+                Map<String, Object> _temp = new HashMap<>();
+                _temp.put("first_name", rs.getString("first_name"));
+                _temp.put("middle_name", rs.getString("middle_name"));
+                _temp.put("last_name", rs.getString("last_name"));
+                
+                Map<String, String> notices = new HashMap<>();
+                notices.put(rs.getString("date"), rs.getString("content"));
+                _temp.put("notices", notices);
+                output.put(_faculty_id, _temp);
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Generates an unique Student Roll number
+     * @return
+     * @throws SQLException
+     */
     public String generateRoll() throws SQLException {
         Integer roll = 0;
         Random rand = new Random();
@@ -51,6 +123,12 @@ public class Model {
         return roll.toString();
     }
 
+    /**
+     * Finds Student existence for an email
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public boolean existsStudentEmail(String email) throws SQLException {
 
         db.selectTable("student_master");
@@ -69,6 +147,12 @@ public class Model {
         return false;
     }
 
+    /**
+     * Finds Student existence for a Roll
+     * @param roll
+     * @return
+     * @throws SQLException
+     */
     public boolean existsRoll(String roll) throws SQLException {
         db.selectTable("student_master");
         db.select_count("id");
@@ -86,6 +170,12 @@ public class Model {
         return false;
     }
 
+    /**
+     * Finds Student Registration Number by an email (If Exists)
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public String getRegByEmail(String email) throws SQLException {
 
         db.selectTable("student_master");
@@ -101,6 +191,12 @@ public class Model {
         return null;
     }
 
+    /**
+     * Finds Student Roll Number by an email (If Exists)
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public String getRollByEmail(String email) throws SQLException {
 
         db.selectTable("student_master");
@@ -116,12 +212,19 @@ public class Model {
         return null;
     }
 
+    /**
+     *
+     * Finds Faculty object by Semi-complete Faculty object (If Exists)
+     * @param faculty
+     * @return
+     * @throws SQLException
+     */
     public Faculty getFaculty(Faculty faculty) throws SQLException {
         Faculty output_faculty = new Faculty();
 
         db.selectTable("faculty_master");
         db.select(new String[]{"*"});
-        if (faculty.getPassword().trim() != "" && !faculty.getPassword().trim().equals("adminRequest96")) {
+        if (!faculty.getPassword().trim().equals("") && !faculty.getPassword().trim().equals("adminRequest96")) {
             db.where("password", faculty.getPassword().trim());
         } else {
             if (!faculty.getPassword().trim().equals("adminrequest96")) {
@@ -129,9 +232,9 @@ public class Model {
             }
         }
 
-        if (faculty != null && faculty.getEmail().trim() != "") {
+        if (faculty != null && !faculty.getEmail().trim().equals("")) {
             db.where("email", faculty.getEmail().trim());
-        } else if (faculty != null && faculty.getUsername().trim() != "") {
+        } else if (faculty != null && !faculty.getUsername().trim().equals("")) {
             if (!faculty.getPassword().trim().equals("adminrequest96")) {
                 db.where("username", faculty.getUsername().trim());
             }
@@ -161,7 +264,7 @@ public class Model {
     }
 
     /**
-     *
+     * Returns Subject Semester by the Subject Code.
      * @param subjectCode
      * @return
      * @throws SQLException It will return only the first result for the subject
@@ -184,7 +287,7 @@ public class Model {
     }
 
     /**
-     *
+     * Returns Subject ID by the Subject Code.
      * @param subjectCode
      * @return
      * @throws SQLException It will return only the first result for the subject
@@ -206,6 +309,12 @@ public class Model {
         return (sem != null && sem.equals("")) ? null : sem;
     }
 
+    /**
+     * Returns Faculty ID by Faculty email (If Exists)
+     * @param email
+     * @return
+     * @throws SQLException
+     */
     public String getFacultyID(String email) throws SQLException {
         db.selectTable("faculty_master");
         db.select(new String[]{"id"});
@@ -219,6 +328,13 @@ public class Model {
         return null;
     }
 
+    /**
+     * Assign Faculty to a Subject.
+     * @param facultyID
+     * @param subjectID
+     * @return
+     * @throws SQLException
+     */
     protected boolean assignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
         db.selectTable("faculty_subject_map");
         db.select_count("id");
@@ -240,6 +356,13 @@ public class Model {
         return false;
     }
 
+    /**
+     * Unassign Faculty from a Subject.
+     * @param facultyID
+     * @param subjectID
+     * @return
+     * @throws SQLException
+     */
     protected boolean unassignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
         db.selectTable("faculty_subject_map");
         db.select_count("id");
@@ -261,8 +384,14 @@ public class Model {
         return false;
     }
 
+    /**
+     * Compile Students Data From ResultSet (Database)
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     protected ArrayList<Student> compileStudentsDataFromResultSet(ResultSet rs) throws SQLException {
-        ArrayList<Student> list = new ArrayList<Student>();
+        ArrayList<Student> list = new ArrayList<>();
         while (rs.next()) {
             Student student = new Student();
             student.setFirst_name(rs.getString("first_name"));
@@ -340,6 +469,7 @@ public class Model {
             student.setSession_of_year_gap(rs.getString("session_of_year_gap"));
             student.setReason_of_year_gap(rs.getString("reason_of_year_gap"));
             student.setBlood_group(rs.getString("blood_group"));
+            student.setImage(rs.getString("image").replaceAll("%%", "\\\\"));
 
             list.add(student);
         }

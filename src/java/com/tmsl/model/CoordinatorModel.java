@@ -19,7 +19,7 @@ import java.util.Map;
  * @author Shankha
  *
  */
-public class TeacherModel extends Model {
+public class CoordinatorModel extends Model {
 
     /**
      * Returns All Student Data
@@ -35,7 +35,7 @@ public class TeacherModel extends Model {
     }
 
     /**
-     * Returns All Student Data With Filters
+     * Get All Student With Filters
      * @param filters
      * @param values
      * @return
@@ -121,6 +121,7 @@ public class TeacherModel extends Model {
     public boolean setStudentMarks(String roll, String subjectCode, String marks, String year) throws SQLException {
         subjectCode = subjectCode.toUpperCase();
         
+                
         db.joinTables(new String[]{"faculty_subject_map", "faculty_master"});
         db.select(new String[]{"A.subject_id"});
         db.where("A.faculty_id", "B.id");
@@ -137,7 +138,6 @@ public class TeacherModel extends Model {
             System.out.println("-------------------------------------------------------------------");
             return false;
         }
-        
         
         if (!getStudentSemester(roll).equals(getSubjectSemester(subjectCode))) {
             System.out.println();
@@ -175,7 +175,6 @@ public class TeacherModel extends Model {
 
         return false;
     }
-
 
     /**
      * Get Student Marks
@@ -231,7 +230,7 @@ public class TeacherModel extends Model {
             }
         }
 
-        //System.out.println(db.getQueryString());
+        System.out.println(db.getQueryString());
         ResultSet rs = db.access();
 
         while (rs.next()) {
