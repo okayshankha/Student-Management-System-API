@@ -1,0 +1,8 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${sha}This project is build by shankhadeep das
+${sha}https://computopedia.com ${licensePrefix}
+<#if licenseLast??>
+${licenseLast}
+</#if>

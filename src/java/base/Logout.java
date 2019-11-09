@@ -35,6 +35,9 @@ public class Logout extends Controller {
     @Override
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        response.setContentType("text/json;charset=UTF-8");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
