@@ -27,9 +27,10 @@ public class AdminModel extends Model {
     /**
      *
      * Return Faculty Filtered by Mobile Number
+     *
      * @param mob
-     * @return 
-     * @throws java.sql.SQLException 
+     * @return
+     * @throws java.sql.SQLException
      */
     public Faculty getFacultyByMobile(String mob) throws SQLException {
         Faculty faculty = null;
@@ -62,6 +63,7 @@ public class AdminModel extends Model {
 
     /**
      * Return Faculty Filtered by Mobile email
+     *
      * @param email
      * @return
      * @throws SQLException
@@ -95,6 +97,7 @@ public class AdminModel extends Model {
 
     /**
      * Return Faculty Filtered by Mobile type
+     *
      * @param type
      * @param filterType
      * @param filterValue
@@ -153,6 +156,7 @@ public class AdminModel extends Model {
 
     /**
      * Return Faculty Filtered by Mobile type
+     *
      * @param type
      * @return
      * @throws SQLException
@@ -180,18 +184,21 @@ public class AdminModel extends Model {
         ResultSet rs = db.access();
 
         while (rs.next()) {
-            Faculty tempFaculty = new Faculty();
-            tempFaculty.setEmail(rs.getString("email"));
-            //tempFaculty.setUsername(rs.getString("username"));
-            tempFaculty.setUsername("hidden");
-            tempFaculty.setFirst_name(rs.getString("first_name"));
-            tempFaculty.setLast_name(rs.getString("last_name"));
-            tempFaculty.setMiddle_name(rs.getString("middle_name"));
-            tempFaculty.setMobile_number(rs.getString("mobile_number"));
-            tempFaculty.setPassword("hidden");
-            tempFaculty.setFaculty_type(rs.getString("faculty_type"));
+            if (!rs.getString("email").equals("")) {
+                Faculty tempFaculty = new Faculty();
+                tempFaculty.setEmail(rs.getString("email"));
+                //tempFaculty.setUsername(rs.getString("username"));
+                tempFaculty.setUsername("hidden");
+                tempFaculty.setFirst_name(rs.getString("first_name"));
+                tempFaculty.setLast_name(rs.getString("last_name"));
+                tempFaculty.setMiddle_name(rs.getString("middle_name"));
+                tempFaculty.setMobile_number(rs.getString("mobile_number"));
+                tempFaculty.setPassword("hidden");
+                tempFaculty.setFaculty_type(rs.getString("faculty_type"));
 
-            all_faculties.add(tempFaculty);
+                all_faculties.add(tempFaculty);
+            }
+
         }
 
         return all_faculties;
@@ -223,6 +230,7 @@ public class AdminModel extends Model {
 
     /**
      * Adds New Faculty
+     *
      * @param faculty
      * @return
      * @throws SQLException
@@ -261,6 +269,7 @@ public class AdminModel extends Model {
 
     /**
      * Deletes New Faculty
+     *
      * @param faculty
      * @return
      * @throws SQLException
@@ -290,6 +299,7 @@ public class AdminModel extends Model {
 
     /**
      * Checks if Faculty Exists
+     *
      * @param faculty
      * @return
      * @throws SQLException
@@ -349,7 +359,8 @@ public class AdminModel extends Model {
 
     /**
      * Returns all Student data
-     * @return 
+     *
+     * @return
      * @throws java.sql.SQLException
      */
     public ArrayList<Student> getAllStudent() throws SQLException {
@@ -362,6 +373,7 @@ public class AdminModel extends Model {
 
     /**
      * Returns all Student data (With Filter)
+     *
      * @param filters
      * @param values
      * @return
@@ -412,6 +424,7 @@ public class AdminModel extends Model {
 
     /**
      * Adds Single Student
+     *
      * @param student
      * @return
      * @throws SQLException
@@ -540,6 +553,7 @@ public class AdminModel extends Model {
 
     /**
      * Get Student Semester by Roll
+     *
      * @param roll
      * @return
      * @throws SQLException Returns Student semester number. Returns -1 if
@@ -565,6 +579,7 @@ public class AdminModel extends Model {
 
     /**
      * Set Student Semester by Roll
+     *
      * @param roll
      * @param sem
      * @return
@@ -620,6 +635,7 @@ public class AdminModel extends Model {
 
     /**
      * Promote Student Semester
+     *
      * @param roll
      * @return
      * @throws SQLException
@@ -627,7 +643,7 @@ public class AdminModel extends Model {
     public boolean promoteStudentSemester(String roll) throws SQLException {
         String _sem = getStudentSemester(roll);
         Integer nextSem = Integer.parseInt(_sem) + 1;
-        if(nextSem == 8){
+        if (nextSem == 8) {
             return false;
         }
         if (!_sem.equals("-1")) {
@@ -638,6 +654,7 @@ public class AdminModel extends Model {
 
     /**
      * Get Student Marks
+     *
      * @param filters
      * @param values
      * @param orderBy
@@ -674,13 +691,12 @@ public class AdminModel extends Model {
                     break;
                 case "sem":
                     db.where("C.subject_semester", values[i].trim());
-                break;
+                    break;
 
             }
         }
 
         //System.out.println(db.getQueryString());
-
         ResultSet rs = db.access();
 
         while (rs.next()) {
@@ -710,7 +726,6 @@ public class AdminModel extends Model {
                 _data.put("first_name", rs.getString("first_name"));
                 _data.put("middle_name", rs.getString("middle_name"));
                 _data.put("last_name", rs.getString("last_name"));
-                
 
                 Map<String, String> _dataMarks = new HashMap<>();
 
@@ -736,6 +751,7 @@ public class AdminModel extends Model {
 
     /**
      * Set Student Marks
+     *
      * @param roll
      * @param subjectCode
      * @param marks
@@ -785,6 +801,7 @@ public class AdminModel extends Model {
 
     /**
      * Get Runner ups
+     *
      * @param year
      * @return
      * @throws SQLException
@@ -794,9 +811,8 @@ public class AdminModel extends Model {
 
         String query1 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `project_database`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `project_database`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND B.`year` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
         //String query1 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `W7CEGX1euX`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `W7CEGX1euX`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND B.`year` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
-        
-        //String query2 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `project_database`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `project_database`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
 
+        //String query2 = "SELECT C.`first_name`, C.`middle_name`, C.`last_name`, A.`semester`, B.* FROM `project_database`.`student_semester_map` AS A, (SELECT B.`mca_university_roll_no`, B.`year`, B.`total_marks` FROM `project_database`.`subject_semester_map` AS A, (SELECT `student_marks_map`.`mca_university_roll_no`, `student_marks_map`.`year`, `student_marks_map`.`subject_id`, Sum(`student_marks_map`.`marks`) AS 'total_marks' FROM `project_database`.`student_marks_map` GROUP BY `student_marks_map`.`mca_university_roll_no`) AS B WHERE B.`subject_id` = A.`id`) AS B, `project_database`.`student_master` AS C WHERE B.`mca_university_roll_no` = A.`mca_university_roll_no` AND A.`semester` = ? AND C.`mca_university_roll_no` = B.`mca_university_roll_no` ORDER BY B.`year`, B.`total_marks` DESC LIMIT 3;";
         String query = null;
         String[] params = null;
 
@@ -833,6 +849,7 @@ public class AdminModel extends Model {
 
     /**
      * Get Subjects
+     *
      * @return
      * @throws SQLException
      */
@@ -845,12 +862,12 @@ public class AdminModel extends Model {
 
         while (rs.next()) {
             if (result.containsKey(rs.getString("subject_semester"))) {
-                List<Map<String, Object>> subList = (List<Map<String, Object>>)result.get(rs.getString("subject_semester"));
+                List<Map<String, Object>> subList = (List<Map<String, Object>>) result.get(rs.getString("subject_semester"));
                 Map<String, Object> _result = new HashMap<String, Object>();
                 _result.put("id", rs.getString("id"));
                 _result.put("subject_name", rs.getString("subject_name"));
                 _result.put("subject_code", rs.getString("subject_code"));
-                
+
                 subList.add(_result);
                 result.put(rs.getString("subject_semester"), subList);
 
@@ -860,24 +877,24 @@ public class AdminModel extends Model {
                 _result.put("id", rs.getString("id"));
                 _result.put("subject_name", rs.getString("subject_name"));
                 _result.put("subject_code", rs.getString("subject_code"));
-                
+
                 subList.add(_result);
                 result.put(rs.getString("subject_semester"), subList);
             }
 
         }
-        
+
         return result;
     }
-    
+
     @Override
     public boolean assignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
-        return super.assignFacultyToSubject(facultyID,subjectID);
+        return super.assignFacultyToSubject(facultyID, subjectID);
     }
-    
+
     @Override
     public boolean unassignFacultyToSubject(String facultyID, String subjectID) throws SQLException {
-        return super.unassignFacultyToSubject(facultyID,subjectID);
+        return super.unassignFacultyToSubject(facultyID, subjectID);
     }
 
 }
