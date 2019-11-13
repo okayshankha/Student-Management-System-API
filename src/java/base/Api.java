@@ -5,11 +5,8 @@
  */
 package base;
 
-import base.Controller;
 import static base.Controller.request;
 import com.sha.ExcelHandler;
-import static com.sha.ExcelHandler.getDataPositionMapping;
-import static com.sha.ExcelHandler.readExcel;
 import com.tmsl.capability.AdminCapability;
 import com.tmsl.capability.CoordinatorCapability;
 import com.tmsl.capability.HodCapability;
@@ -24,11 +21,10 @@ import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -192,7 +188,18 @@ public class Api extends Controller {
                     if (faculty.getFaculty_type().equals("1")) {
                         output.put("user_type", "admin");
                     } else {
-                        output.put("user_type", "faculty");
+                        switch(faculty.getFaculty_type()){
+                            case "2":
+                                output.put("user_type", "hod");
+                                break;
+                            case "3":
+                                output.put("user_type", "coordinator");
+                                break;
+                            case "4":
+                                output.put("user_type", "teacher");
+                                break;
+                        }
+                        
                     }
                     HttpSession session = request.getSession();
                     session.setAttribute("login_status", "true");
@@ -271,7 +278,7 @@ public class Api extends Controller {
                         output.put("status", "failed");
                         output.put("info", "update error");
                     }
-                } catch (Exception ex) {
+                } catch (SQLException ex) {
                     System.out.println(ex);
                 }
                 break;
@@ -295,10 +302,11 @@ public class Api extends Controller {
                         output.put("status", "failed");
                         output.put("info", "update error");
                     }
-                } catch (Exception ex) {
+                } catch (SQLException ex) {
                     System.out.println(ex);
                 }
                 break;
+
             case "/assign_teacher_to_subject":
                 try {
                     String email = gPost("email");
@@ -507,7 +515,10 @@ public class Api extends Controller {
                     String year = gPost("year");
                     String subjectCode = gPost("subject_code");
 
-                    if (capability.setStudnetMarks(roll, subjectCode, marks, year)) {
+                    int post_year = Integer.parseInt(year);
+                    int curr_year = Calendar.getInstance().get(Calendar.YEAR);
+
+                    if ((post_year <= curr_year) && capability.setStudnetMarks(roll, subjectCode, marks, year)) {
                         output.put("status", "success");
                         output.put("info", "marks updated");
                     } else {
@@ -555,9 +566,18 @@ public class Api extends Controller {
             case "/student/get/runnerups":
                 try {
                     String year = gPost("year");
-                    Map<String, Object> result = capability.getRunnerups(year);
-                    output.put("status", "success");
-                    output.put("runner_ups", result);
+
+                    int post_year = Integer.parseInt(year);
+                    int curr_year = Calendar.getInstance().get(Calendar.YEAR);
+                    if (post_year <= curr_year) {
+                        Map<String, Object> result = capability.getRunnerups(year);
+                        output.put("status", "success");
+                        output.put("runner_ups", result);
+                    } else {
+                        output.put("status", "failed");
+                        output.put("invalid_data", "year");
+                    }
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -823,7 +843,10 @@ public class Api extends Controller {
                     String year = gPost("year");
                     String subjectCode = gPost("subject_code");
 
-                    if (capability.setStudnetMarks(roll, subjectCode, marks, year)) {
+                    int post_year = Integer.parseInt(year);
+                    int curr_year = Calendar.getInstance().get(Calendar.YEAR);
+
+                    if ((post_year <= curr_year) && capability.setStudnetMarks(roll, subjectCode, marks, year)) {
                         output.put("status", "success");
                         output.put("info", "marks updated");
                     } else {
@@ -1016,7 +1039,10 @@ public class Api extends Controller {
                     String year = gPost("year");
                     String subjectCode = gPost("subject_code");
 
-                    if (capability.setStudnetMarks(roll, subjectCode, marks, year)) {
+                    int post_year = Integer.parseInt(year);
+                    int curr_year = Calendar.getInstance().get(Calendar.YEAR);
+
+                    if ((post_year <= curr_year) && capability.setStudnetMarks(roll, subjectCode, marks, year)) {
                         output.put("status", "success");
                         output.put("info", "marks updated");
                     } else {
@@ -1178,7 +1204,10 @@ public class Api extends Controller {
                     String year = gPost("year");
                     String subjectCode = gPost("subject_code");
 
-                    if (capability.setStudnetMarks(roll, subjectCode, marks, year)) {
+                    int post_year = Integer.parseInt(year);
+                    int curr_year = Calendar.getInstance().get(Calendar.YEAR);
+
+                    if ((post_year <= curr_year) && capability.setStudnetMarks(roll, subjectCode, marks, year)) {
                         output.put("status", "success");
                         output.put("info", "marks updated");
                     } else {
@@ -1320,10 +1349,10 @@ public class Api extends Controller {
             case "/image/upload":
                 try {
                     Map<String, Object> data = capability.studentImageUpload();
-                    if(data.containsKey("status")){
+                    if (data.containsKey("status")) {
                         output.put("status", data.get("status"));
                     }
-                    if(data.containsKey("info")){
+                    if (data.containsKey("info")) {
                         output.put("info", data.get("info"));
                     }
 

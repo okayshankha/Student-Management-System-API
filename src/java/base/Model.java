@@ -25,10 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 public class Model {
 
     /**
-     *  Database object variable.
+     * Database object variable.
      */
     protected DB db;
-
 
     /**
      * Default Constructor
@@ -44,6 +43,7 @@ public class Model {
 
     /**
      * Ends MySQL connection
+     *
      * @throws SQLException
      */
     public void closeConnection() throws SQLException {
@@ -52,6 +52,7 @@ public class Model {
 
     /**
      * Enables to post a new notice
+     *
      * @param faculty_id
      * @param content
      * @throws SQLException
@@ -59,10 +60,10 @@ public class Model {
     public void postNotice(String faculty_id, String content) throws SQLException {
         Map<String, String> data = new HashMap<>();
         data.put("content", content);
-        
-        Date date=java.util.Calendar.getInstance().getTime(); 
+
+        Date date = java.util.Calendar.getInstance().getTime();
         data.put("date", date.toString());
-        
+
         data.put("faculty_id", faculty_id);
         db.insert("notice", data);
         db.access();
@@ -70,6 +71,7 @@ public class Model {
 
     /**
      * Enables to post a new notice (Optionally filtered by faculty email id)
+     *
      * @param faculty_id
      * @return
      * @throws SQLException
@@ -78,27 +80,27 @@ public class Model {
         db.joinTables(new String[]{"faculty_master", "notice"});
         db.select(new String[]{"B.faculty_id", "A.first_name", "A.middle_name", "A.last_name", "B.content", "B.date"});
         db.where("A.id", "B.faculty_id");
-        if(!faculty_id.equals("")){
+        if (!faculty_id.equals("")) {
             db.where("B.faculty_id", faculty_id);
         }
         ResultSet rs = db.access();
         Map<String, Object> output = new HashMap<>();
-        
-        while(rs.next()){
+
+        while (rs.next()) {
             String _faculty_id = rs.getString("faculty_id");
-            if(output.containsKey(_faculty_id)){
-                Map<String, Object> _temp = (Map<String, Object>)output.get(_faculty_id);
-                Map<String, String> notices = (Map<String, String>)_temp.get("notices");
+            if (output.containsKey(_faculty_id)) {
+                Map<String, Object> _temp = (Map<String, Object>) output.get(_faculty_id);
+                Map<String, String> notices = (Map<String, String>) _temp.get("notices");
                 notices.put(rs.getString("date"), rs.getString("content"));
                 _temp.put("notices", notices);
-                
+
                 output.put(_faculty_id, _temp);
-            }else{
+            } else {
                 Map<String, Object> _temp = new HashMap<>();
                 _temp.put("first_name", rs.getString("first_name"));
                 _temp.put("middle_name", rs.getString("middle_name"));
                 _temp.put("last_name", rs.getString("last_name"));
-                
+
                 Map<String, String> notices = new HashMap<>();
                 notices.put(rs.getString("date"), rs.getString("content"));
                 _temp.put("notices", notices);
@@ -110,6 +112,7 @@ public class Model {
 
     /**
      * Generates an unique Student Roll number
+     *
      * @return
      * @throws SQLException
      */
@@ -125,6 +128,7 @@ public class Model {
 
     /**
      * Finds Student existence for an email
+     *
      * @param email
      * @return
      * @throws SQLException
@@ -149,6 +153,7 @@ public class Model {
 
     /**
      * Finds Student existence for a Roll
+     *
      * @param roll
      * @return
      * @throws SQLException
@@ -172,6 +177,7 @@ public class Model {
 
     /**
      * Finds Student Registration Number by an email (If Exists)
+     *
      * @param email
      * @return
      * @throws SQLException
@@ -193,6 +199,7 @@ public class Model {
 
     /**
      * Finds Student Roll Number by an email (If Exists)
+     *
      * @param email
      * @return
      * @throws SQLException
@@ -215,6 +222,7 @@ public class Model {
     /**
      *
      * Finds Faculty object by Semi-complete Faculty object (If Exists)
+     *
      * @param faculty
      * @return
      * @throws SQLException
@@ -265,6 +273,7 @@ public class Model {
 
     /**
      * Returns Subject Semester by the Subject Code.
+     *
      * @param subjectCode
      * @return
      * @throws SQLException It will return only the first result for the subject
@@ -288,6 +297,7 @@ public class Model {
 
     /**
      * Returns Subject ID by the Subject Code.
+     *
      * @param subjectCode
      * @return
      * @throws SQLException It will return only the first result for the subject
@@ -311,6 +321,7 @@ public class Model {
 
     /**
      * Returns Faculty ID by Faculty email (If Exists)
+     *
      * @param email
      * @return
      * @throws SQLException
@@ -330,6 +341,7 @@ public class Model {
 
     /**
      * Assign Faculty to a Subject.
+     *
      * @param facultyID
      * @param subjectID
      * @return
@@ -358,6 +370,7 @@ public class Model {
 
     /**
      * Unassign Faculty from a Subject.
+     *
      * @param facultyID
      * @param subjectID
      * @return
@@ -386,6 +399,7 @@ public class Model {
 
     /**
      * Compile Students Data From ResultSet (Database)
+     *
      * @param rs
      * @return
      * @throws SQLException
@@ -469,7 +483,11 @@ public class Model {
             student.setSession_of_year_gap(rs.getString("session_of_year_gap"));
             student.setReason_of_year_gap(rs.getString("reason_of_year_gap"));
             student.setBlood_group(rs.getString("blood_group"));
-            student.setImage(rs.getString("image").replaceAll("%%", "\\\\"));
+            try {
+                student.setImage(rs.getString("image").replaceAll("%%", "\\\\"));
+            } catch (NullPointerException e) {
+
+            }
 
             list.add(student);
         }

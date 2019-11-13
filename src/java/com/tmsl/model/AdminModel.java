@@ -5,10 +5,7 @@
  */
 package com.tmsl.model;
 
-import base.Controller;
 import base.Model;
-import com.google.gson.Gson;
-import com.mysql.cj.xdevapi.Result;
 import com.tmsl.pojo.Faculty;
 import com.tmsl.pojo.Student;
 import java.sql.ResultSet;
@@ -105,7 +102,7 @@ public class AdminModel extends Model {
      * @throws SQLException
      */
     public ArrayList<Faculty> getAllFacultyByType(String type, String filterType, String filterValue) throws SQLException {
-        ArrayList<Faculty> all_faculties = new ArrayList<Faculty>();
+        ArrayList<Faculty> all_faculties = new ArrayList<>();
 
         if (type.equals("hod")) {
             type = "2";
@@ -308,8 +305,9 @@ public class AdminModel extends Model {
      */
     public String existsFaculty(Faculty faculty) throws SQLException {
         int cnt = 0;
+        
         if (faculty.getEmail().trim().equals("")) {
-            //return "email";
+            return "please provide an email";
         }
 
         /**

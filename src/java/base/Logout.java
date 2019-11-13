@@ -5,7 +5,6 @@
  */
 package base;
 
-import base.Controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -25,11 +24,12 @@ public class Logout extends Controller {
 
     /**
      * Constructor call
+     *
      * @throws ServletException
      * @throws IOException
      */
     public Logout() throws ServletException, IOException {
-        super();
+        //super();
     }
 
     @Override
@@ -37,14 +37,14 @@ public class Logout extends Controller {
 
         response.setContentType("text/json;charset=UTF-8");
         response.setHeader("Access-Control-Allow-Origin", "*");
-        
+
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
         Map<String, String> output = new HashMap<>();
         output.put("status", "success");
-        
+
         PrintWriter out = response.getWriter();
         try {
             out.print(jsonOut(output));
