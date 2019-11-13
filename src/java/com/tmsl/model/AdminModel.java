@@ -137,18 +137,20 @@ public class AdminModel extends Model {
         ResultSet rs = db.access();
 
         while (rs.next()) {
-            Faculty tempFaculty = new Faculty();
-            tempFaculty.setEmail(rs.getString("email"));
-            //tempFaculty.setUsername(rs.getString("username"));
-            tempFaculty.setUsername("hidden");
-            tempFaculty.setFirst_name(rs.getString("first_name"));
-            tempFaculty.setLast_name(rs.getString("last_name"));
-            tempFaculty.setMiddle_name(rs.getString("middle_name"));
-            tempFaculty.setMobile_number(rs.getString("mobile_number"));
-            tempFaculty.setPassword("hidden");
-            tempFaculty.setFaculty_type(rs.getString("faculty_type"));
+            if (!rs.getString("email").equals("")) {
+                Faculty tempFaculty = new Faculty();
+                tempFaculty.setEmail(rs.getString("email"));
+                //tempFaculty.setUsername(rs.getString("username"));
+                tempFaculty.setUsername("hidden");
+                tempFaculty.setFirst_name(rs.getString("first_name"));
+                tempFaculty.setLast_name(rs.getString("last_name"));
+                tempFaculty.setMiddle_name(rs.getString("middle_name"));
+                tempFaculty.setMobile_number(rs.getString("mobile_number"));
+                tempFaculty.setPassword("hidden");
+                tempFaculty.setFaculty_type(rs.getString("faculty_type"));
 
-            all_faculties.add(tempFaculty);
+                all_faculties.add(tempFaculty);
+            }
         }
 
         return all_faculties;
