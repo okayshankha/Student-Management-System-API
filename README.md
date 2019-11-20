@@ -10,7 +10,7 @@ API doc is available at [API Doc](https://documenter.getpostman.com/view/3694598
 - Find **Controller.java** file.
 - Find **line 31** : *public static String USER_UPLOAD_DIR = "D";*
 - Now change the ending "D" to your computers local partition name whare you want to store images and other files.
-- After changing go to the exact pratition and create the following file structure
+- After changing go to the exact partition and create the following file structure
 ```
     --D
       |--project_5th_sem
